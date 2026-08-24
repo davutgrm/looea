@@ -38,11 +38,11 @@ export function AppSidebar({
 
   return (
     <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r bg-sidebar px-3 py-5 md:flex">
-      <Link href="/kesfet" className="px-3 text-xl font-bold tracking-tight text-app-accent">
+      <Link href="/kesfet" className="px-3 text-2xl font-bold tracking-tight text-app-accent">
         Kuafi
       </Link>
 
-      <nav className="mt-8 flex flex-col gap-1">
+      <nav className="mt-8 flex flex-col gap-2">
         {NAV.map((item) => {
           const active = isActive(item.href);
           const Icon = item.icon;
@@ -51,13 +51,13 @@ export function AppSidebar({
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 rounded-full px-4 py-2.5 text-sm font-medium transition-colors",
+                "flex items-center gap-3 rounded-full px-4 py-3 text-base font-semibold transition-colors",
                 active
                   ? "bg-app-accent text-app-accent-foreground"
-                  : "text-muted-foreground hover:bg-app-accent-soft hover:text-app-accent-soft-foreground",
+                  : "text-foreground hover:bg-app-accent-soft hover:text-app-accent-soft-foreground",
               )}
             >
-              <Icon className="size-4.5 shrink-0" />
+              <Icon className="size-5 shrink-0" />
               {item.label}
             </Link>
           );

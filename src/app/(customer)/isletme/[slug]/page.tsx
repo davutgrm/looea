@@ -153,14 +153,14 @@ export default async function BusinessProfilePage({
             {/* About */}
             {business.description && (
               <section>
-                <h2 className="text-lg font-bold">Hakkında</h2>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{business.description}</p>
+                <h2 className="text-xl font-bold">Hakkında</h2>
+                <p className="mt-2 text-sm leading-relaxed text-foreground">{business.description}</p>
               </section>
             )}
 
             {/* Services */}
             <section>
-              <h2 className="text-lg font-bold">Hizmet Seçimi</h2>
+              <h2 className="text-xl font-bold">Hizmet Seçimi</h2>
               <div className="mt-3 space-y-2">
                 {business.services.map((service) => (
                   <div
@@ -187,7 +187,7 @@ export default async function BusinessProfilePage({
             {/* Where */}
             {business.location && (
               <section>
-                <h2 className="text-lg font-bold">Nerede</h2>
+                <h2 className="text-xl font-bold">Nerede</h2>
                 <p className="mt-2 text-sm text-muted-foreground">
                   {business.location.address}, {business.location.city}
                 </p>
@@ -219,7 +219,7 @@ export default async function BusinessProfilePage({
 
             {/* Gallery */}
             <section>
-              <h2 className="text-lg font-bold">Galeri</h2>
+              <h2 className="text-xl font-bold">Galeri</h2>
               {business.portfolioImages.length > 0 ? (
                 <div className="mt-3 grid grid-cols-3 gap-2">
                   {business.portfolioImages.map((img) => (
@@ -239,7 +239,7 @@ export default async function BusinessProfilePage({
             {/* Staff */}
             {business.staff.length > 0 && (
               <section>
-                <h2 className="text-lg font-bold">Çalışanlar</h2>
+                <h2 className="text-xl font-bold">Çalışanlar</h2>
                 <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
                   {business.staff.map((s) => (
                     <div key={s.id} className="rounded-2xl border bg-card p-4 text-center shadow-sm">
@@ -256,7 +256,7 @@ export default async function BusinessProfilePage({
 
             {/* Reviews */}
             <section id="degerlendirmeler">
-              <h2 className="text-lg font-bold">Değerlendirmeler ({business.reviews.length})</h2>
+              <h2 className="text-xl font-bold">Değerlendirmeler ({business.reviews.length})</h2>
               <div className="mt-3 space-y-3">
                 {business.reviews.length === 0 && (
                   <p className="text-sm text-muted-foreground">Henüz yorum yok.</p>
@@ -290,7 +290,7 @@ export default async function BusinessProfilePage({
           {/* Sticky sidebar: rating summary + hours */}
           <aside className="space-y-4 md:sticky md:top-20 md:self-start">
             <div className="rounded-2xl border bg-card p-5 shadow-sm">
-              <h3 className="text-sm font-semibold text-muted-foreground">Genel Puan</h3>
+              <h3 className="text-sm font-semibold text-foreground">Genel Puan</h3>
               <div className="mt-1 flex items-baseline gap-2">
                 <span className="text-3xl font-bold">
                   {business.ratingAvg > 0 ? business.ratingAvg.toFixed(1) : "—"}
@@ -329,7 +329,7 @@ export default async function BusinessProfilePage({
             </div>
 
             <div className="rounded-2xl border bg-card p-5 shadow-sm">
-              <h3 className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+              <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
                 <Clock className="size-4" /> Çalışma Saatleri
               </h3>
               <div className="mt-3 space-y-1.5 text-sm">
@@ -353,10 +353,10 @@ export default async function BusinessProfilePage({
             </div>
 
             <div className="rounded-2xl border bg-card p-5 shadow-sm">
-              <h3 className="text-sm font-semibold text-muted-foreground">İletişim</h3>
+              <h3 className="text-sm font-semibold text-foreground">İletişim</h3>
               <div className="mt-3 space-y-2 text-sm">
                 {business.phone && (
-                  <p className="flex items-center gap-2 text-muted-foreground">
+                  <p className="flex items-center gap-2 text-foreground">
                     <Phone className="size-4 shrink-0" /> {business.phone}
                   </p>
                 )}

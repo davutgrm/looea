@@ -115,7 +115,7 @@ function AppointmentCard({
               {APPOINTMENT_STATUS_LABELS[appointment.status as keyof typeof APPOINTMENT_STATUS_LABELS]}
             </Badge>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-foreground">
             {appointment.service.name}
             {appointment.staff && ` · ${appointment.staff.name}`}
           </p>

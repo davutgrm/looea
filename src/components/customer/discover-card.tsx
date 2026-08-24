@@ -49,32 +49,30 @@ export function DiscoverCard({
         className="absolute top-3 right-3"
       />
 
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="relative size-20 overflow-hidden rounded-full bg-card shadow-lg ring-4 ring-white/85">
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-5 text-center">
+        <div className="relative size-16 shrink-0 overflow-hidden rounded-full bg-card shadow-lg ring-4 ring-white/85">
           {business.logoUrl ? (
-            <Image src={business.logoUrl} alt="" fill sizes="80px" className="object-cover" />
+            <Image src={business.logoUrl} alt="" fill sizes="64px" className="object-cover" />
           ) : (
-            <div className="flex h-full items-center justify-center text-2xl font-bold text-muted-foreground">
+            <div className="flex h-full items-center justify-center text-xl font-bold text-muted-foreground">
               {business.name[0]}
             </div>
           )}
         </div>
+        <h3 className="font-grotesk line-clamp-2 text-xl leading-tight font-bold text-white">{business.name}</h3>
       </div>
 
-      <div className="absolute inset-x-0 bottom-0 space-y-1 p-4 text-white">
-        <h3 className="line-clamp-1 font-semibold">{business.name}</h3>
-        <div className="flex items-center gap-2.5 text-xs text-white/80">
-          <span className="flex items-center gap-0.5 font-medium text-white">
-            <Star className="size-3.5 fill-white text-white" />
-            {business.ratingAvg > 0 ? business.ratingAvg.toFixed(1) : "Yeni"}
-            {business.ratingCount > 0 && <span className="text-white/70">({business.ratingCount})</span>}
+      <div className="absolute inset-x-0 bottom-0 flex items-center gap-2 p-4">
+        <span className="flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur-sm">
+          <Star className="size-3.5 fill-white text-white" />
+          {business.ratingAvg > 0 ? business.ratingAvg.toFixed(1) : "Yeni"}
+          {business.ratingCount > 0 && <span className="font-medium text-white/80">({business.ratingCount})</span>}
+        </span>
+        {business.distanceKm !== null && (
+          <span className="flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur-sm">
+            <MapPin className="size-3.5" /> {formatDistance(business.distanceKm)}
           </span>
-          {business.distanceKm !== null && (
-            <span className="flex items-center gap-0.5">
-              <MapPin className="size-3.5" /> {formatDistance(business.distanceKm)}
-            </span>
-          )}
-        </div>
+        )}
       </div>
     </Link>
   );

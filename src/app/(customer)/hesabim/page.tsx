@@ -35,12 +35,12 @@ export default async function ProfilePage() {
       </div>
 
       <section>
-        <h2 className="mb-3 text-sm font-semibold text-muted-foreground">Kişisel Bilgiler</h2>
+        <h2 className="mb-3 text-sm font-semibold text-foreground">Kişisel Bilgiler</h2>
         <ProfileForm name={me.name} phone={me.phone ?? ""} />
       </section>
 
       <section>
-        <h2 className="mb-3 text-sm font-semibold text-muted-foreground">Menü</h2>
+        <h2 className="mb-3 text-sm font-semibold text-foreground">Menü</h2>
         <div className="divide-y rounded-2xl border">
           {MENU.map((item) => (
             <Link key={item.label} href={item.href} className="flex items-center gap-3 p-4 text-sm hover:bg-accent">
@@ -52,7 +52,7 @@ export default async function ProfilePage() {
       </section>
 
       <section id="bildirimler">
-        <h2 className="mb-3 text-sm font-semibold text-muted-foreground">Bildirimler</h2>
+        <h2 className="mb-3 text-sm font-semibold text-foreground">Bildirimler</h2>
         {notifications.length === 0 ? (
           <p className="text-sm text-muted-foreground">Henüz bildiriminiz yok.</p>
         ) : (
