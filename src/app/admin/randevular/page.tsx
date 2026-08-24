@@ -1,10 +1,13 @@
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
+import { CalendarDays } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth-guard";
 import { PageHeader } from "@/components/admin/page-header";
 import { AppointmentsFilterBar } from "@/components/admin/appointments-filter-bar";
 import { Pager } from "@/components/admin/pager";
+import { EmptyState } from "@/components/admin/empty-state";
+import { Price } from "@/components/admin/price";
 import {
   Table,
   TableBody,
@@ -104,7 +107,7 @@ export default async function AdminAppointmentsPage({
                   <p className="text-xs text-muted-foreground">{a.customer.email}</p>
                 </TableCell>
                 <TableCell className="text-sm">{a.service.name}</TableCell>
-                <TableCell className="text-sm">{a.price.toLocaleString("tr-TR")} ₺</TableCell>
+                <TableCell className="text-sm"><Price amount={a.price} /></TableCell>
                 <TableCell>
                   <Badge variant="secondary">{APPOINTMENT_STATUS_LABELS[a.status]}</Badge>
                 </TableCell>
@@ -112,8 +115,8 @@ export default async function AdminAppointmentsPage({
             ))}
             {appointments.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} className="py-10 text-center text-muted-foreground">
-                  Randevu bulunamadı.
+                <TableCell colSpan={7}>
+                  <EmptyState icon={CalendarDays} title="Randevu bulunamadı" />
                 </TableCell>
               </TableRow>
             )}

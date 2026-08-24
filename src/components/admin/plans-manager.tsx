@@ -33,6 +33,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { createPlan, updatePlan, deletePlan, togglePlanActive, movePlan } from "@/lib/actions/admin";
+import { Price } from "@/components/admin/price";
 
 export type PlanRow = {
   id: string;
@@ -144,7 +145,7 @@ function PlanRowItem({ plan }: { plan: PlanRow }) {
         <p className="text-sm font-medium">{plan.name}</p>
         <p className="text-xs text-muted-foreground">/{plan.slug}</p>
       </TableCell>
-      <TableCell className="text-sm">{plan.price.toLocaleString("tr-TR")} ₺</TableCell>
+      <TableCell className="text-sm"><Price amount={plan.price} /></TableCell>
       <TableCell className="text-sm">{BILLING_LABELS[plan.billingPeriod] ?? plan.billingPeriod}</TableCell>
       <TableCell>
         <div className="flex items-center gap-1">
@@ -250,7 +251,7 @@ function PlanFormDialog({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="plan-price">Fiyat (₺)</Label>
+              <Label htmlFor="plan-price">Fiyat (<span className="font-sans">₺</span>)</Label>
               <Input
                 id="plan-price"
                 type="number"

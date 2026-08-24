@@ -3,6 +3,8 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { Users } from "lucide-react";
+import { EmptyState } from "@/components/admin/empty-state";
 import {
   Table,
   TableBody,
@@ -68,8 +70,8 @@ export function UsersTable({
           ))}
           {users.length === 0 && (
             <TableRow>
-              <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
-                Kullanıcı bulunamadı.
+              <TableCell colSpan={6}>
+                <EmptyState icon={Users} title="Kullanıcı bulunamadı" />
               </TableCell>
             </TableRow>
           )}

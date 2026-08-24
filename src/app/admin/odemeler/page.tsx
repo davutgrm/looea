@@ -1,10 +1,13 @@
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
+import { CreditCard } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth-guard";
 import { PageHeader } from "@/components/admin/page-header";
 import { PaymentsFilterBar } from "@/components/admin/payments-filter-bar";
 import { Pager } from "@/components/admin/pager";
+import { EmptyState } from "@/components/admin/empty-state";
+import { Price } from "@/components/admin/price";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -89,7 +92,7 @@ export default async function AdminPaymentsPage({
                 <TableCell className="text-sm font-medium">{p.subscription.business.name}</TableCell>
                 <TableCell className="text-sm">{p.subscription.plan.name}</TableCell>
                 <TableCell className="text-sm">
-                  {p.amount.toLocaleString("tr-TR")} {p.currency}
+                  <Price amount={p.amount} />
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">{p.provider}</TableCell>
                 <TableCell>
@@ -104,8 +107,8 @@ export default async function AdminPaymentsPage({
             ))}
             {payments.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
-                  Ödeme kaydı bulunamadı.
+                <TableCell colSpan={6}>
+                  <EmptyState icon={CreditCard} title="Ödeme kaydı bulunamadı" />
                 </TableCell>
               </TableRow>
             )}

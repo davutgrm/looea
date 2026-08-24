@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CancelAppointmentButton } from "@/components/customer/cancel-appointment-button";
 import { ReviewDialog } from "@/components/customer/review-dialog";
+import { Price } from "@/components/customer/price";
 
 const STATUS_VARIANT: Record<string, string> = {
   PENDING: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
@@ -122,7 +123,7 @@ function AppointmentCard({
             {appointment.date.toLocaleDateString("tr-TR", { day: "numeric", month: "long" })} · {appointment.startTime}
           </p>
           <div className="mt-2 flex items-center justify-between">
-            <p className="font-semibold">{appointment.price}₺</p>
+            <p className="font-semibold"><Price amount={appointment.price} /></p>
           </div>
         </div>
       </Link>

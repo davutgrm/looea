@@ -1,11 +1,14 @@
 import { notFound } from "next/navigation";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
+import { Scissors, Users } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth-guard";
 import { PageHeader } from "@/components/admin/page-header";
 import { BusinessDetailActions } from "@/components/admin/business-detail-actions";
 import { BusinessEditForm } from "@/components/admin/business-edit-form";
+import { EmptyState } from "@/components/admin/empty-state";
+import { Price } from "@/components/admin/price";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BUSINESS_TYPE_LABELS } from "@/lib/business-types";
@@ -140,7 +143,7 @@ export default async function AdminBusinessDetailPage({
           </CardHeader>
           <CardContent className="space-y-2">
             {business.services.length === 0 && (
-              <p className="text-sm text-muted-foreground">Henüz hizmet eklenmemiş.</p>
+              <EmptyState icon={Scissors} title="Henüz hizmet eklenmemiş" />
             )}
             {business.services.map((s) => (
               <div
@@ -154,7 +157,7 @@ export default async function AdminBusinessDetailPage({
                   </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
-                  <span className="text-sm font-medium">{s.price.toLocaleString("tr-TR")} ₺</span>
+                  <span className="text-sm font-medium"><Price amount={s.price} /></span>
                   <Badge variant={s.active ? "secondary" : "outline"}>
                     {s.active ? "Aktif" : "Pasif"}
                   </Badge>
@@ -170,7 +173,7 @@ export default async function AdminBusinessDetailPage({
           </CardHeader>
           <CardContent className="space-y-2">
             {business.staff.length === 0 && (
-              <p className="text-sm text-muted-foreground">Henüz personel eklenmemiş.</p>
+              <EmptyState icon={Users} title="Henüz personel eklenmemiş" />
             )}
             {business.staff.map((s) => (
               <div

@@ -11,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { EmptyState } from "@/components/admin/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -54,8 +55,8 @@ export function ReviewsTable({ reviews }: { reviews: ReviewRow[] }) {
           ))}
           {reviews.length === 0 && (
             <TableRow>
-              <TableCell colSpan={7} className="py-10 text-center text-muted-foreground">
-                Yorum bulunamadı.
+              <TableCell colSpan={7}>
+                <EmptyState icon={Star} title="Yorum bulunamadı" />
               </TableCell>
             </TableRow>
           )}

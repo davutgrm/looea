@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { requireRole } from "@/lib/auth-guard";
+import { spaceGrotesk } from "@/lib/fonts";
 import { AdminSidebar } from "@/components/admin/sidebar";
 import { AdminMobileNav } from "@/components/admin/mobile-nav";
 
@@ -9,7 +10,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   const email = user.email ?? "";
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className={`${spaceGrotesk.variable} font-grotesk [--font-heading:var(--font-grotesk)] min-h-screen bg-muted/30`}>
       <AdminSidebar name={name} email={email} />
       <AdminMobileNav name={name} email={email} />
       <main className="md:pl-64">

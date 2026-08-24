@@ -14,7 +14,6 @@ import { Switch } from "@/components/ui/switch";
 import { MapView } from "@/components/map/map-view";
 import { BusinessCard } from "@/components/customer/business-card";
 import { useLocation } from "@/components/customer/location-provider";
-import { haversineDistanceKm } from "@/lib/maps/distance";
 import type { MapBounds } from "@/lib/maps/types";
 import type { Category } from "@/generated/prisma/client";
 import type { BusinessCard as BusinessCardData, BusinessSort } from "@/lib/data/business";

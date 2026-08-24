@@ -15,15 +15,11 @@ import { requireRole } from "@/lib/auth-guard";
 import { PageHeader } from "@/components/admin/page-header";
 import { StatCard } from "@/components/admin/stat-card";
 import { BarList } from "@/components/admin/bar-list";
+import { EmptyState } from "@/components/admin/empty-state";
+import { Price } from "@/components/admin/price";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { APPOINTMENT_STATUS_LABELS } from "@/lib/business-types";
-
-const currencyFormatter = new Intl.NumberFormat("tr-TR", {
-  style: "currency",
-  currency: "EUR",
-  maximumFractionDigits: 0,
-});
 
 const ROLE_LABELS: Record<string, string> = {
   CUSTOMER: "Müşteri",
@@ -118,7 +114,7 @@ export default async function AdminDashboardPage() {
         />
         <StatCard
           label="Aylık Platform Geliri"
-          value={currencyFormatter.format(monthlyRevenue)}
+          value={<Price amount={monthlyRevenue} />}
           icon={Wallet}
           hint={format(now, "MMMM yyyy", { locale: tr })}
         />
@@ -139,9 +135,7 @@ export default async function AdminDashboardPage() {
             <CardTitle>Son Kayıt Olanlar</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {recentUsers.length === 0 && (
-              <p className="py-6 text-center text-sm text-muted-foreground">Henüz kullanıcı yok.</p>
-            )}
+            {recentUsers.length === 0 && <EmptyState icon={Users} title="Henüz kullanıcı yok" />}
             {recentUsers.map((u) => (
               <div key={u.id} className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
@@ -165,7 +159,7 @@ export default async function AdminDashboardPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             {recentAppointments.length === 0 && (
-              <p className="py-6 text-center text-sm text-muted-foreground">Henüz randevu yok.</p>
+              <EmptyState icon={CalendarDays} title="Henüz randevu yok" />
             )}
             {recentAppointments.map((a) => (
               <div key={a.id} className="flex items-center justify-between gap-3">

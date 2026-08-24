@@ -9,6 +9,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@
 import { PageHeader } from "@/components/business/page-header";
 import { EmptyState } from "@/components/business/empty-state";
 import { PlanSelector } from "@/components/business/plan-selector";
+import { Price } from "@/components/business/price";
 import { cn } from "@/lib/utils";
 import type { SubscriptionStatus, PaymentStatus } from "@/generated/prisma/client";
 
@@ -94,7 +95,7 @@ export default async function UyelikPage() {
                     <TableRow key={p.id}>
                       <TableCell>{format(p.createdAt, "d MMM yyyy HH:mm", { locale: tr })}</TableCell>
                       <TableCell>
-                        {p.amount.toLocaleString("tr-TR")} {p.currency}
+                        <Price amount={p.amount} />
                       </TableCell>
                       <TableCell className="capitalize">{p.provider}</TableCell>
                       <TableCell>

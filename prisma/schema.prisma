@@ -1,4 +1,4 @@
-// Salonix - Prisma schema
+// Kuafi - Prisma schema
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {

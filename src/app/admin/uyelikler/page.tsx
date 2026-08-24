@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
+import { CreditCard } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth-guard";
 import { PageHeader } from "@/components/admin/page-header";
 import { PlansManager } from "@/components/admin/plans-manager";
+import { EmptyState } from "@/components/admin/empty-state";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -110,8 +112,8 @@ export default async function AdminSubscriptionPlansPage() {
               ))}
               {subscriptions.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
-                    Henüz abonelik bulunmuyor.
+                  <TableCell colSpan={5}>
+                    <EmptyState icon={CreditCard} title="Henüz abonelik bulunmuyor" />
                   </TableCell>
                 </TableRow>
               )}

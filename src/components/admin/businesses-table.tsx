@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Eye, MoreHorizontal, ShieldCheck, ShieldOff, Trash2 } from "lucide-react";
+import { Building2, Eye, MoreHorizontal, ShieldCheck, ShieldOff, Trash2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -12,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { EmptyState } from "@/components/admin/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
@@ -66,8 +67,8 @@ export function BusinessesTable({ businesses }: { businesses: BusinessRow[] }) {
           ))}
           {businesses.length === 0 && (
             <TableRow>
-              <TableCell colSpan={8} className="py-10 text-center text-muted-foreground">
-                İşletme bulunamadı.
+              <TableCell colSpan={8}>
+                <EmptyState icon={Building2} title="İşletme bulunamadı" />
               </TableCell>
             </TableRow>
           )}
