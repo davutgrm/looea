@@ -18,7 +18,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
             <button
               type="button"
               onClick={reset}
-              style={{ borderRadius: 999, background: "#7c3aed", color: "#fff", padding: "10px 24px", fontWeight: 600, border: "none", cursor: "pointer" }}
+              style={{ borderRadius: 999, background: "#a21cdb", color: "#fff", padding: "10px 24px", fontWeight: 600, border: "none", cursor: "pointer" }}
             >
               Tekrar dene
             </button>

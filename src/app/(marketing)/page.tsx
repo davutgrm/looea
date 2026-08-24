@@ -76,7 +76,7 @@ export default async function LandingPage() {
       <section className="relative">
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[640px] bg-[radial-gradient(ellipse_55%_50%_at_50%_0%,rgba(139,92,246,0.14),transparent_70%)]"
+          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[640px] bg-[radial-gradient(ellipse_55%_50%_at_50%_0%,rgba(162,28,219,0.14),transparent_70%)]"
         />
         <div className="mx-auto max-w-2xl px-4 pt-16 pb-20 text-center md:pt-24 md:pb-28">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold text-violet-700 dark:bg-violet-500/15 dark:text-violet-300">

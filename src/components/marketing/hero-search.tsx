@@ -18,7 +18,7 @@ export function HeroSearch() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-2xl rounded-[28px] border border-black/5 bg-white p-2.5 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_32px_64px_-24px_rgba(139,92,246,0.25)] dark:border-white/10 dark:bg-neutral-900">
+    <div className="mx-auto w-full max-w-2xl rounded-[28px] border border-black/5 bg-white p-2.5 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_32px_64px_-24px_rgba(162,28,219,0.25)] dark:border-white/10 dark:bg-neutral-900">
       <div className="flex justify-center gap-1 p-1.5">
         <button
           type="button"

@@ -8,7 +8,7 @@ import type { MapViewProps } from "@/lib/maps/types";
 import { cn } from "@/lib/utils";
 
 function pinIcon(selected: boolean, label?: string) {
-  const color = "var(--app-accent, #7c3aed)";
+  const color = "var(--app-accent, #a21cdb)";
   const pinHeight = 40;
   const labelHtml = label
     ? `<span style="
