@@ -1,0 +1,145 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { completeOnboarding } from "@/lib/actions/customer";
+import { OnboardingShell } from "./onboarding-shell";
+import { BirthDateStep, isValidBirthDate, type BirthDateValue } from "./steps/birth-date-step";
+import { CityStep } from "./steps/city-step";
+import { PhoneStep, isValidPhone } from "./steps/phone-step";
+import { StyleStep } from "./steps/style-step";
+import { PhotoStep } from "./steps/photo-step";
+
+const TOTAL_STEPS = 5;
+
+type FormState = {
+  birthDate: BirthDateValue;
+  city: string;
+  phone: string;
+  interests: string[];
+  avatarDataUrl: string | null;
+};
+
+const INITIAL_STATE: FormState = {
+  birthDate: { day: "", month: "", year: "" },
+  city: "",
+  phone: "",
+  interests: [],
+  avatarDataUrl: null,
+};
+
+export function OnboardingWizard() {
+  const router = useRouter();
+  const [step, setStep] = useState(1);
+  const [data, setData] = useState<FormState>(INITIAL_STATE);
+  const [isPending, startTransition] = useTransition();
+
+  function finish(avatarUrl: string | undefined) {
+    startTransition(async () => {
+      const { day, month, year } = data.birthDate;
+      const birthDateIso = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+
+      const result = await completeOnboarding({
+        birthDate: birthDateIso,
+        city: data.city,
+        phone: `+90${data.phone}`,
+        interests: data.interests,
+        avatarUrl,
+      });
+
+      if (!result.success) {
+        toast.error(result.error);
+        return;
+      }
+      toast.success("Kuafi'ye hoş geldin! Artık kuaför aramaya hazırsın.");
+      router.push("/kesfet");
+      router.refresh();
+    });
+  }
+
+  function goNext() {
+    if (step === TOTAL_STEPS) {
+      finish(data.avatarDataUrl ?? undefined);
+      return;
+    }
+    setStep((s) => s + 1);
+  }
+
+  const nav = {
+    step,
+    totalSteps: TOTAL_STEPS,
+    onBack: step > 1 ? () => setStep((s) => s - 1) : undefined,
+  };
+
+  if (step === 1) {
+    return (
+      <OnboardingShell
+        {...nav}
+        title="Doğum tarihin ne zaman?"
+        subtitle="Sana özel kampanyaları ve doğum günü sürprizlerini kaçırma."
+        canContinue={isValidBirthDate(data.birthDate)}
+        onContinue={goNext}
+      >
+        <BirthDateStep value={data.birthDate} onChange={(birthDate) => setData((d) => ({ ...d, birthDate }))} />
+      </OnboardingShell>
+    );
+  }
+
+  if (step === 2) {
+    return (
+      <OnboardingShell
+        {...nav}
+        title="Nerede yaşıyorsun?"
+        subtitle="En yakın kuaförleri bulmak için."
+        canContinue={!!data.city}
+        onContinue={goNext}
+      >
+        <CityStep value={data.city} onChange={(city) => setData((d) => ({ ...d, city }))} />
+      </OnboardingShell>
+    );
+  }
+
+  if (step === 3) {
+    return (
+      <OnboardingShell
+        {...nav}
+        title="Telefon numaran nedir?"
+        subtitle="Randevu onayların için."
+        canContinue={isValidPhone(data.phone)}
+        onContinue={goNext}
+      >
+        <PhoneStep value={data.phone} onChange={(phone) => setData((d) => ({ ...d, phone }))} />
+      </OnboardingShell>
+    );
+  }
+
+  if (step === 4) {
+    return (
+      <OnboardingShell
+        {...nav}
+        title="Hangi tarzlar ilgini çekiyor?"
+        subtitle="Sana daha uygun kuaförleri önerelim."
+        canContinue={data.interests.length > 0}
+        onContinue={goNext}
+      >
+        <StyleStep value={data.interests} onChange={(interests) => setData((d) => ({ ...d, interests }))} />
+      </OnboardingShell>
+    );
+  }
+
+  return (
+    <OnboardingShell
+      {...nav}
+      title="Profil fotoğrafı ekle"
+      subtitle="Kuaförler seni daha kolay tanısın — istersen sonra da ekleyebilirsin."
+      canContinue={!!data.avatarDataUrl}
+      onContinue={goNext}
+      continuePending={isPending}
+      skipLabel="Bu adımı atla"
+      onSkip={() => finish(undefined)}
+    >
+      <PhotoStep value={data.avatarDataUrl} onChange={(avatarDataUrl) => setData((d) => ({ ...d, avatarDataUrl }))} />
+    </OnboardingShell>
+  );
+}
