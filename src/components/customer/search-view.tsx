@@ -15,7 +15,7 @@ import { MapView } from "@/components/map/map-view";
 import { BusinessCard } from "@/components/customer/business-card";
 import { useLocation } from "@/components/customer/location-provider";
 import type { MapBounds } from "@/lib/maps/types";
-import type { Category } from "@/generated/prisma/client";
+import type { Category, BusinessServes } from "@/generated/prisma/client";
 import type { BusinessCard as BusinessCardData, BusinessSort } from "@/lib/data/business";
 import { searchBusinessesAction, getAvailabilityBadges } from "@/lib/actions/search";
 
@@ -29,6 +29,7 @@ export function SearchView({
   categories,
   favoriteIds,
   isLoggedIn,
+  serves,
 }: {
   initialQuery: string;
   initialCategory: string;
@@ -37,6 +38,7 @@ export function SearchView({
   categories: Category[];
   favoriteIds: Set<string>;
   isLoggedIn: boolean;
+  serves?: BusinessServes[] | null;
 }) {
   const { coords } = useLocation();
   const [view, setView] = useState<"list" | "map">("list");
@@ -60,6 +62,7 @@ export function SearchView({
         radiusKm: bounds ? undefined : radiusKm ?? undefined,
         sort,
         bounds,
+        serves,
       });
       setResults(data);
       setPendingBounds(null);

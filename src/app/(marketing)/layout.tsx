@@ -37,9 +37,9 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
           </Link>
           <Link
             href="/isletme-kaydet"
-            className="hidden rounded-full border border-black/10 px-4 py-2 text-sm font-semibold transition-colors hover:border-black/20 hover:bg-black/[0.03] sm:block dark:border-white/15 dark:hover:bg-white/5"
+            className="hidden text-sm font-medium text-black/60 hover:text-foreground sm:block dark:text-white/60"
           >
-            İşletmeni Kaydet
+            İşletmeler için →
           </Link>
           <Link
             href="/kesfet"

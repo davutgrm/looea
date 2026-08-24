@@ -447,6 +447,7 @@ const businessProfileSchema = z.object({
   email: z.string().optional(),
   instagram: z.string().optional(),
   website: z.string().optional(),
+  serves: z.enum(["MEN", "WOMEN", "UNISEX"]),
 });
 
 export async function updateBusinessProfile(input: unknown): Promise<ActionResult> {
@@ -455,7 +456,7 @@ export async function updateBusinessProfile(input: unknown): Promise<ActionResul
   const parsed = businessProfileSchema.safeParse(input);
   if (!parsed.success) return fail(firstIssue(parsed.error));
 
-  const { name, description, logoUrl, coverImageUrl, phone, email, instagram, website } = parsed.data;
+  const { name, description, logoUrl, coverImageUrl, phone, email, instagram, website, serves } = parsed.data;
 
   await prisma.business.update({
     where: { id: businessId },
@@ -468,11 +469,14 @@ export async function updateBusinessProfile(input: unknown): Promise<ActionResul
       email: email || null,
       instagram: instagram || null,
       website: website || null,
+      serves,
     },
   });
 
   revalidatePath("/business/ayarlar");
   revalidatePath("/business");
+  revalidatePath("/kesfet");
+  revalidatePath("/ara");
   return { success: true, data: undefined };
 }
 

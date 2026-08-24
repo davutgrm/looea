@@ -28,6 +28,7 @@ export default async function AyarlarPage() {
           email: business.email ?? "",
           instagram: business.instagram ?? "",
           website: business.website ?? "",
+          serves: business.serves,
         }}
       />
 

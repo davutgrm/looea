@@ -182,6 +182,7 @@ export async function submitReview(input: z.infer<typeof reviewSchema>): Promise
 }
 
 const completeOnboardingSchema = z.object({
+  segment: z.enum(["MALE", "FEMALE"]),
   birthDate: z.string().min(1),
   city: z.string().min(1),
   phone: z.string().min(1),
@@ -197,11 +198,12 @@ export async function completeOnboarding(
 
   const parsed = completeOnboardingSchema.safeParse(input);
   if (!parsed.success) return err("Geçersiz bilgi");
-  const { birthDate, city, phone, interests, avatarUrl } = parsed.data;
+  const { segment, birthDate, city, phone, interests, avatarUrl } = parsed.data;
 
   await prisma.user.update({
     where: { id: session.user.id },
     data: {
+      segment,
       birthDate: new Date(birthDate),
       city,
       phone,
@@ -212,6 +214,30 @@ export async function completeOnboarding(
   });
 
   revalidatePath("/kesfet");
+  revalidatePath("/hesabim");
+  return ok(undefined);
+}
+
+const updateSegmentSchema = z.object({
+  segment: z.enum(["MALE", "FEMALE"]),
+});
+
+export async function updateSegment(
+  input: z.infer<typeof updateSegmentSchema>,
+): Promise<ActionResult> {
+  const session = await auth();
+  if (!session?.user) return err("Giriş yapmalısınız");
+
+  const parsed = updateSegmentSchema.safeParse(input);
+  if (!parsed.success) return err("Geçersiz bilgi");
+
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: { segment: parsed.data.segment },
+  });
+
+  revalidatePath("/kesfet");
+  revalidatePath("/ara");
   revalidatePath("/hesabim");
   return ok(undefined);
 }

@@ -4,6 +4,7 @@ import { requireUser } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ProfileForm } from "@/components/customer/profile-form";
+import { SegmentToggle } from "@/components/customer/segment-toggle";
 
 const MENU = [
   { href: "/hesabim/randevularim", label: "Randevularım", icon: CalendarCheck },
@@ -37,6 +38,11 @@ export default async function ProfilePage() {
       <section>
         <h2 className="mb-3 text-sm font-semibold text-foreground">Kişisel Bilgiler</h2>
         <ProfileForm name={me.name} phone={me.phone ?? ""} />
+      </section>
+
+      <section>
+        <h2 className="mb-3 text-sm font-semibold text-foreground">Aradığın hizmetler</h2>
+        <SegmentToggle value={me.segment} />
       </section>
 
       <section>

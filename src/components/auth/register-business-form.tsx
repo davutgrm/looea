@@ -15,8 +15,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { BUSINESS_TYPE_OPTIONS } from "@/lib/business-types";
+import { Scissors, Sparkles, Users } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { BUSINESS_TYPE_OPTIONS, BUSINESS_SERVES_LABELS } from "@/lib/business-types";
 import { registerBusiness } from "@/lib/actions/auth";
+
+const SERVES_OPTIONS = [
+  { value: "MEN" as const, icon: Scissors },
+  { value: "WOMEN" as const, icon: Sparkles },
+  { value: "UNISEX" as const, icon: Users },
+];
 
 export function RegisterBusinessForm() {
   const router = useRouter();
@@ -26,6 +34,7 @@ export function RegisterBusinessForm() {
     password: "",
     businessName: "",
     businessType: "WOMEN_SALON" as const,
+    serves: "UNISEX" as "MEN" | "WOMEN" | "UNISEX",
   });
   const [isPending, startTransition] = useTransition();
 
@@ -64,6 +73,27 @@ export function RegisterBusinessForm() {
           onChange={(e) => setValues((v) => ({ ...v, businessName: e.target.value }))}
           className="focus-visible:border-app-accent focus-visible:ring-app-accent/50"
         />
+      </div>
+      <div className="space-y-1.5">
+        <Label>Kime hizmet veriyorsunuz?</Label>
+        <div className="grid grid-cols-3 gap-2">
+          {SERVES_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => setValues((v) => ({ ...v, serves: opt.value }))}
+              className={cn(
+                "flex flex-col items-center justify-center gap-2 rounded-2xl border-2 px-2 py-4 text-center transition-colors",
+                values.serves === opt.value
+                  ? "border-app-accent bg-app-accent-soft"
+                  : "border-border hover:border-app-accent/40",
+              )}
+            >
+              <opt.icon className="size-5 text-app-accent" />
+              <span className="text-xs leading-tight font-semibold">{BUSINESS_SERVES_LABELS[opt.value]}</span>
+            </button>
+          ))}
+        </div>
       </div>
       <div className="space-y-1.5">
         <Label>İşletme Türü</Label>

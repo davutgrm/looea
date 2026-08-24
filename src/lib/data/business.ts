@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { haversineDistanceKm } from "@/lib/maps/distance";
 import { getAvailability } from "@/lib/availability";
 import type { LatLng } from "@/lib/maps/types";
+import type { BusinessServes } from "@/generated/prisma/client";
 
 const cardInclude = {
   location: true,
@@ -70,9 +71,13 @@ function toCard(
   };
 }
 
-export async function getFeaturedBusinesses(origin?: LatLng | null, limit = 8): Promise<BusinessCard[]> {
+export async function getFeaturedBusinesses(
+  origin?: LatLng | null,
+  limit = 8,
+  serves?: BusinessServes[] | null,
+): Promise<BusinessCard[]> {
   const businesses = await prisma.business.findMany({
-    where: { active: true },
+    where: { active: true, ...(serves ? { serves: { in: serves } } : {}) },
     include: cardInclude,
     orderBy: [{ verified: "desc" }, { ratingCount: "desc" }, { ratingAvg: "desc" }],
     take: limit,
@@ -89,12 +94,14 @@ export async function searchBusinesses(params: {
   radiusKm?: number;
   sort?: BusinessSort;
   bounds?: { north: number; south: number; east: number; west: number };
+  serves?: BusinessServes[] | null;
 }): Promise<BusinessCard[]> {
-  const { query, categorySlug, origin, radiusKm, sort = "distance", bounds } = params;
+  const { query, categorySlug, origin, radiusKm, sort = "distance", bounds, serves } = params;
 
   const businesses = await prisma.business.findMany({
     where: {
       active: true,
+      ...(serves ? { serves: { in: serves } } : {}),
       ...(query
         ? {
             OR: [

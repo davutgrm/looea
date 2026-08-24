@@ -5,15 +5,19 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { completeOnboarding } from "@/lib/actions/customer";
 import { OnboardingShell } from "./onboarding-shell";
+import { SegmentStep } from "./steps/segment-step";
 import { BirthDateStep, isValidBirthDate, type BirthDateValue } from "./steps/birth-date-step";
 import { CityStep } from "./steps/city-step";
 import { PhoneStep, isValidPhone } from "./steps/phone-step";
-import { StyleStep } from "./steps/style-step";
+import { StyleStep, type StyleOption } from "./steps/style-step";
 import { PhotoStep } from "./steps/photo-step";
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 6;
+
+type Segment = "MALE" | "FEMALE";
 
 type FormState = {
+  segment: Segment | null;
   birthDate: BirthDateValue;
   city: string;
   phone: string;
@@ -22,6 +26,7 @@ type FormState = {
 };
 
 const INITIAL_STATE: FormState = {
+  segment: null,
   birthDate: { day: "", month: "", year: "" },
   city: "",
   phone: "",
@@ -29,11 +34,19 @@ const INITIAL_STATE: FormState = {
   avatarDataUrl: null,
 };
 
-export function OnboardingWizard() {
+export function OnboardingWizard({
+  categories,
+}: {
+  categories: { id: string; name: string; serves: "MEN" | "WOMEN" | "UNISEX" }[];
+}) {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [data, setData] = useState<FormState>(INITIAL_STATE);
   const [isPending, startTransition] = useTransition();
+
+  const styleOptions: StyleOption[] = categories
+    .filter((c) => c.serves === "UNISEX" || c.serves === (data.segment === "MALE" ? "MEN" : "WOMEN"))
+    .map((c) => ({ id: c.id, name: c.name }));
 
   function finish(avatarUrl: string | undefined) {
     startTransition(async () => {
@@ -41,6 +54,7 @@ export function OnboardingWizard() {
       const birthDateIso = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
 
       const result = await completeOnboarding({
+        segment: data.segment!,
         birthDate: birthDateIso,
         city: data.city,
         phone: `+90${data.phone}`,
@@ -76,6 +90,27 @@ export function OnboardingWizard() {
     return (
       <OnboardingShell
         {...nav}
+        title="Hangi hizmetleri arıyorsun?"
+        subtitle="Sana en uygun işletmeleri gösterebilmemiz için."
+        canContinue={!!data.segment}
+        onContinue={goNext}
+        hideFooter
+      >
+        <SegmentStep
+          value={data.segment}
+          onSelect={(segment) => {
+            setData((d) => ({ ...d, segment }));
+            setStep(2);
+          }}
+        />
+      </OnboardingShell>
+    );
+  }
+
+  if (step === 2) {
+    return (
+      <OnboardingShell
+        {...nav}
         title="Doğum tarihin ne zaman?"
         subtitle="Sana özel kampanyaları ve doğum günü sürprizlerini kaçırma."
         canContinue={isValidBirthDate(data.birthDate)}
@@ -86,7 +121,7 @@ export function OnboardingWizard() {
     );
   }
 
-  if (step === 2) {
+  if (step === 3) {
     return (
       <OnboardingShell
         {...nav}
@@ -100,7 +135,7 @@ export function OnboardingWizard() {
     );
   }
 
-  if (step === 3) {
+  if (step === 4) {
     return (
       <OnboardingShell
         {...nav}
@@ -114,7 +149,7 @@ export function OnboardingWizard() {
     );
   }
 
-  if (step === 4) {
+  if (step === 5) {
     return (
       <OnboardingShell
         {...nav}
@@ -123,7 +158,7 @@ export function OnboardingWizard() {
         canContinue={data.interests.length > 0}
         onContinue={goNext}
       >
-        <StyleStep value={data.interests} onChange={(interests) => setData((d) => ({ ...d, interests }))} />
+        <StyleStep options={styleOptions} value={data.interests} onChange={(interests) => setData((d) => ({ ...d, interests }))} />
       </OnboardingShell>
     );
   }

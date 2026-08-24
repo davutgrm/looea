@@ -60,6 +60,17 @@ enum NotificationType {
   SYSTEM
 }
 
+enum Segment {
+  MALE
+  FEMALE
+}
+
+enum BusinessServes {
+  MEN
+  WOMEN
+  UNISEX
+}
+
 // ---------- Core identity ----------
 
 model User {
@@ -72,6 +83,7 @@ model User {
   birthDate           DateTime?
   city                String?
   interests           String? // JSON-encoded string[]
+  segment             Segment?
   onboardingCompleted Boolean   @default(false)
   role                Role      @default(CUSTOMER)
   active              Boolean   @default(true)
@@ -93,8 +105,9 @@ model Business {
   owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 
   name          String
-  slug          String       @unique
-  type          BusinessType @default(OTHER)
+  slug          String         @unique
+  type          BusinessType   @default(OTHER)
+  serves        BusinessServes @default(UNISEX)
   description   String?
   logoUrl       String?
   coverImageUrl String?
@@ -207,11 +220,12 @@ model StaffTimeOff {
 model Category {
   id        String   @id @default(cuid())
   name      String
-  slug      String   @unique
+  slug      String         @unique
   group     String // "SAC" | "GUZELLIK" | "TIRNAK" | "OZEL"
-  order     Int      @default(0)
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now())
+  serves    BusinessServes @default(UNISEX)
+  order     Int            @default(0)
+  active    Boolean        @default(true)
+  createdAt DateTime       @default(now())
 
   services        Service[]
   portfolioImages PortfolioImage[]

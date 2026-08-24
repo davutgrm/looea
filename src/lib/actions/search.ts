@@ -2,6 +2,7 @@
 
 import { searchBusinesses, getNextAvailableSlot, type BusinessSort } from "@/lib/data/business";
 import type { LatLng, MapBounds } from "@/lib/maps/types";
+import type { BusinessServes } from "@/generated/prisma/client";
 
 export async function searchBusinessesAction(params: {
   query?: string;
@@ -10,6 +11,7 @@ export async function searchBusinessesAction(params: {
   radiusKm?: number;
   sort?: BusinessSort;
   bounds?: MapBounds;
+  serves?: BusinessServes[] | null;
 }) {
   return searchBusinesses(params);
 }

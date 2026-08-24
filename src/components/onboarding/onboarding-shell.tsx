@@ -15,6 +15,7 @@ export function OnboardingShell({
   continuePending,
   skipLabel,
   onSkip,
+  hideFooter,
   children,
 }: {
   step: number;
@@ -27,6 +28,7 @@ export function OnboardingShell({
   continuePending?: boolean;
   skipLabel?: string;
   onSkip?: () => void;
+  hideFooter?: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -63,27 +65,29 @@ export function OnboardingShell({
           <div className="mt-8">{children}</div>
         </div>
 
-        <div className="flex flex-col items-center gap-3 pb-4">
-          <Button
-            variant="accent"
-            size="lg"
-            className="w-full"
-            disabled={!canContinue || continuePending}
-            onClick={onContinue}
-          >
-            {continuePending && <Loader2 className="size-4 animate-spin" />}
-            Devam
-          </Button>
-          {onSkip && (
-            <button
-              type="button"
-              onClick={onSkip}
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+        {!hideFooter && (
+          <div className="flex flex-col items-center gap-3 pb-4">
+            <Button
+              variant="accent"
+              size="lg"
+              className="w-full"
+              disabled={!canContinue || continuePending}
+              onClick={onContinue}
             >
-              {skipLabel ?? "Bu adımı atla"}
-            </button>
-          )}
-        </div>
+              {continuePending && <Loader2 className="size-4 animate-spin" />}
+              Devam
+            </Button>
+            {onSkip && (
+              <button
+                type="button"
+                onClick={onSkip}
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                {skipLabel ?? "Bu adımı atla"}
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

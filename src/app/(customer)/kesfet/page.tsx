@@ -1,24 +1,32 @@
 import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
 import { getFeaturedBusinesses } from "@/lib/data/business";
 import { getActiveCategories } from "@/lib/data/categories";
 import { getFavoriteIds } from "@/lib/data/favorites";
+import { servesForSegment } from "@/lib/business-types";
 import { CategoryChips } from "@/components/customer/category-chips";
 import { DiscoverRow } from "@/components/customer/discover-row";
 
 export default async function DiscoverPage() {
   const session = await auth();
+  const dbUser = session?.user
+    ? await prisma.user.findUnique({ where: { id: session.user.id }, select: { segment: true } })
+    : null;
+  const serves = servesForSegment(dbUser?.segment);
+
   const [categories, featured, favoriteIds] = await Promise.all([
     getActiveCategories(),
-    getFeaturedBusinesses(null, 16),
+    getFeaturedBusinesses(null, 16, serves),
     getFavoriteIds(),
   ]);
+  const visibleCategories = serves ? categories.filter((c) => serves.includes(c.serves)) : categories;
 
   const newest = [...featured].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   const isLoggedIn = !!session?.user;
 
   return (
     <div className="mx-auto max-w-6xl space-y-8 px-4 py-6">
-      <CategoryChips categories={categories} />
+      <CategoryChips categories={visibleCategories} />
 
       <DiscoverRow
         title="Öne Çıkanlar"

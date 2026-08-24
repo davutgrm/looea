@@ -3,33 +3,30 @@
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export const STYLE_OPTIONS = [
-  "Kadın Kuaförü",
-  "Erkek Berber",
-  "Unisex",
-  "Balayage",
-  "Saç Boyama",
-  "Nail",
-  "Cilt Bakımı",
-  "Kaş/Kirpik",
-  "Makyaj",
-  "Gelin Saçı",
-];
+export type StyleOption = { id: string; name: string };
 
-export function StyleStep({ value, onChange }: { value: string[]; onChange: (value: string[]) => void }) {
+export function StyleStep({
+  options,
+  value,
+  onChange,
+}: {
+  options: StyleOption[];
+  value: string[];
+  onChange: (value: string[]) => void;
+}) {
   function toggle(option: string) {
     onChange(value.includes(option) ? value.filter((v) => v !== option) : [...value, option]);
   }
 
   return (
     <div className="grid grid-cols-2 gap-2.5">
-      {STYLE_OPTIONS.map((opt) => {
-        const active = value.includes(opt);
+      {options.map((opt) => {
+        const active = value.includes(opt.name);
         return (
           <button
-            key={opt}
+            key={opt.id}
             type="button"
-            onClick={() => toggle(opt)}
+            onClick={() => toggle(opt.name)}
             className={cn(
               "flex items-center gap-2 rounded-2xl border px-3.5 py-3 text-left text-sm font-medium transition-colors",
               active
@@ -45,7 +42,7 @@ export function StyleStep({ value, onChange }: { value: string[]; onChange: (val
             >
               {active && <Check className="size-2.5" />}
             </span>
-            <span className="truncate">{opt}</span>
+            <span className="truncate">{opt.name}</span>
           </button>
         );
       })}

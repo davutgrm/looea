@@ -1,12 +1,14 @@
 import { requireBusiness } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
+import { servesForSegment } from "@/lib/business-types";
 import { PageHeader } from "@/components/business/page-header";
 import { ServicesManager } from "@/components/business/services-manager";
 
 export default async function HizmetlerPage() {
   const { businessId } = await requireBusiness();
 
-  const [services, categories, staff] = await Promise.all([
+  const [business, services, categories, staff] = await Promise.all([
+    prisma.business.findUniqueOrThrow({ where: { id: businessId }, select: { serves: true } }),
     prisma.service.findMany({
       where: { businessId },
       orderBy: { createdAt: "desc" },
@@ -19,6 +21,9 @@ export default async function HizmetlerPage() {
       select: { id: true, name: true },
     }),
   ]);
+
+  const visibleServes = servesForSegment(business.serves === "MEN" ? "MALE" : business.serves === "WOMEN" ? "FEMALE" : null);
+  const visibleCategories = visibleServes ? categories.filter((c) => visibleServes.includes(c.serves)) : categories;
 
   const serviceRows = services.map((s) => ({
     id: s.id,
@@ -39,7 +44,7 @@ export default async function HizmetlerPage() {
 
       <ServicesManager
         services={serviceRows}
-        categories={categories.map((c) => ({ id: c.id, name: c.name }))}
+        categories={visibleCategories.map((c) => ({ id: c.id, name: c.name }))}
         staffOptions={staff}
       />
     </div>

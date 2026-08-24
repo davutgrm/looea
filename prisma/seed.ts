@@ -11,39 +11,43 @@ const hash = (pw: string) => bcrypt.hash(pw, HASH_ROUNDS);
 
 const WEEKDAY_HOURS = { open: "09:00", close: "19:00" };
 
-type CategorySeed = { name: string; group: "SAC" | "GUZELLIK" | "TIRNAK" | "OZEL" };
+type CategorySeed = {
+  name: string;
+  group: "SAC" | "GUZELLIK" | "TIRNAK" | "OZEL";
+  serves: "MEN" | "WOMEN" | "UNISEX";
+};
 
 const CATEGORIES: CategorySeed[] = [
   // Saç
-  { name: "Kadın Kuaförü", group: "SAC" },
-  { name: "Erkek Berber", group: "SAC" },
-  { name: "Unisex Kuaför", group: "SAC" },
-  { name: "Saç Kesimi", group: "SAC" },
-  { name: "Saç Boyama", group: "SAC" },
-  { name: "Balayage", group: "SAC" },
-  { name: "Ombre", group: "SAC" },
-  { name: "Blonde", group: "SAC" },
-  { name: "Keratin", group: "SAC" },
-  { name: "Fön", group: "SAC" },
-  { name: "Saç Bakımı", group: "SAC" },
-  { name: "Saç Uzatma", group: "SAC" },
+  { name: "Kadın Kuaförü", group: "SAC", serves: "WOMEN" },
+  { name: "Erkek Berber", group: "SAC", serves: "MEN" },
+  { name: "Unisex Kuaför", group: "SAC", serves: "UNISEX" },
+  { name: "Saç Kesimi", group: "SAC", serves: "UNISEX" },
+  { name: "Saç Boyama", group: "SAC", serves: "WOMEN" },
+  { name: "Balayage", group: "SAC", serves: "WOMEN" },
+  { name: "Ombre", group: "SAC", serves: "WOMEN" },
+  { name: "Blonde", group: "SAC", serves: "WOMEN" },
+  { name: "Keratin", group: "SAC", serves: "WOMEN" },
+  { name: "Fön", group: "SAC", serves: "WOMEN" },
+  { name: "Saç Bakımı", group: "SAC", serves: "UNISEX" },
+  { name: "Saç Uzatma", group: "SAC", serves: "WOMEN" },
   // Güzellik
-  { name: "Güzellik Salonu", group: "GUZELLIK" },
-  { name: "Cilt Bakımı", group: "GUZELLIK" },
-  { name: "Kaş", group: "GUZELLIK" },
-  { name: "Kirpik", group: "GUZELLIK" },
-  { name: "Makyaj", group: "GUZELLIK" },
+  { name: "Güzellik Salonu", group: "GUZELLIK", serves: "WOMEN" },
+  { name: "Cilt Bakımı", group: "GUZELLIK", serves: "UNISEX" },
+  { name: "Kaş", group: "GUZELLIK", serves: "WOMEN" },
+  { name: "Kirpik", group: "GUZELLIK", serves: "WOMEN" },
+  { name: "Makyaj", group: "GUZELLIK", serves: "WOMEN" },
   // Tırnak
-  { name: "Nail Salon", group: "TIRNAK" },
-  { name: "Manikür", group: "TIRNAK" },
-  { name: "Pedikür", group: "TIRNAK" },
-  { name: "Jel Tırnak", group: "TIRNAK" },
-  { name: "Protez Tırnak", group: "TIRNAK" },
+  { name: "Nail Salon", group: "TIRNAK", serves: "WOMEN" },
+  { name: "Manikür", group: "TIRNAK", serves: "WOMEN" },
+  { name: "Pedikür", group: "TIRNAK", serves: "WOMEN" },
+  { name: "Jel Tırnak", group: "TIRNAK", serves: "WOMEN" },
+  { name: "Protez Tırnak", group: "TIRNAK", serves: "WOMEN" },
   // Özel
-  { name: "Gelin Saçı", group: "OZEL" },
-  { name: "Gelin Makyajı", group: "OZEL" },
-  { name: "Özel Gün", group: "OZEL" },
-  { name: "Erkek Bakımı", group: "OZEL" },
+  { name: "Gelin Saçı", group: "OZEL", serves: "WOMEN" },
+  { name: "Gelin Makyajı", group: "OZEL", serves: "WOMEN" },
+  { name: "Özel Gün", group: "OZEL", serves: "WOMEN" },
+  { name: "Erkek Bakımı", group: "OZEL", serves: "MEN" },
 ];
 
 const PLANS = [
@@ -135,7 +139,7 @@ async function main() {
   const categories = await Promise.all(
     CATEGORIES.map((c, i) =>
       prisma.category.create({
-        data: { name: c.name, slug: slug(c.name), group: c.group, order: i },
+        data: { name: c.name, slug: slug(c.name), group: c.group, serves: c.serves, order: i },
       }),
     ),
   );
@@ -160,6 +164,19 @@ async function main() {
       phone: "+90 532 000 00 00",
       passwordHash: await hash("Customer123!"),
       role: "CUSTOMER",
+      segment: "FEMALE",
+      onboardingCompleted: true,
+    },
+  });
+
+  const maleCustomer = await prisma.user.create({
+    data: {
+      name: "Kerem Yıldız",
+      email: "musteri-erkek@kuafi.app",
+      phone: "+90 532 000 00 01",
+      passwordHash: await hash("Customer123!"),
+      role: "CUSTOMER",
+      segment: "MALE",
       onboardingCompleted: true,
     },
   });
@@ -182,6 +199,7 @@ async function main() {
     ownerEmail: string;
     name: string;
     type: "WOMEN_SALON" | "MEN_BARBER" | "BEAUTY_SALON" | "NAIL_SALON";
+    serves: "MEN" | "WOMEN" | "UNISEX";
     description: string;
     address: string;
     city: string;
@@ -201,6 +219,7 @@ async function main() {
       ownerEmail: "studiox@kuafi.app",
       name: "Studio X",
       type: "WOMEN_SALON",
+      serves: "WOMEN",
       description:
         "Kadıköy'ün merkezinde, balayage ve renklendirme konusunda uzmanlaşmış butik kuaför salonu.",
       address: "Caferağa Mah. Moda Cad. No:24, Kadıköy",
@@ -233,6 +252,7 @@ async function main() {
       ownerEmail: "hairlab@kuafi.app",
       name: "Hair Lab",
       type: "MEN_BARBER",
+      serves: "MEN",
       description: "Beşiktaş'ta klasik ve modern erkek tıraş teknikleri bir arada.",
       address: "Sinanpaşa Mah. Beşiktaş Cad. No:11, Beşiktaş",
       city: "İstanbul",
@@ -262,6 +282,7 @@ async function main() {
       ownerEmail: "hairroom@kuafi.app",
       name: "The Hair Room",
       type: "BEAUTY_SALON",
+      serves: "WOMEN",
       description: "Şişli'de cilt bakımı, kaş-kirpik ve makyaj hizmetlerinde uzman güzellik salonu.",
       address: "Halaskargazi Cad. No:88, Şişli",
       city: "İstanbul",
@@ -292,6 +313,7 @@ async function main() {
       ownerEmail: "monohair@kuafi.app",
       name: "Mono Hair Studio",
       type: "NAIL_SALON",
+      serves: "WOMEN",
       description: "Üsküdar'da jel tırnak ve protez tırnak konusunda deneyimli nail stüdyosu.",
       address: "Mimar Sinan Mah. Hakimiyet-i Milliye Cad. No:5, Üsküdar",
       city: "İstanbul",
@@ -315,6 +337,35 @@ async function main() {
         { url: "https://images.unsplash.com/photo-1607779097040-26e80aa78e66?auto=format&fit=crop&w=800&q=70" },
       ],
     },
+    {
+      ownerEmail: "ustabasi@kuafi.app",
+      name: "Ustabaşı Berber",
+      type: "MEN_BARBER",
+      serves: "MEN",
+      description: "Beyoğlu'nda üç kuşaktır süren usta-çırak geleneğiyle klasik ustura tıraşı ve modern erkek kesimleri bir arada.",
+      address: "Asmalımescit Mah. İstiklal Cad. No:142, Beyoğlu",
+      city: "İstanbul",
+      lat: 41.0328,
+      lng: 28.9773,
+      coverImageUrl: "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&w=1200&q=70",
+      logoUrl: "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&w=200&q=70",
+      verified: true,
+      planSlug: "kuafi-pro",
+      staff: [
+        { name: "Hakan Yıldırım", title: "Usta Berber", avatarUrl: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=300&q=70" },
+        { name: "Onur Kaplan", title: "Berber", avatarUrl: "https://images.unsplash.com/photo-1519345182560-3f2917c472ef?auto=format&fit=crop&w=300&q=70" },
+      ],
+      services: [
+        { name: "Saç Kesimi", category: "Saç Kesimi", duration: 30, price: 28, staffIdx: [0, 1] },
+        { name: "Klasik Ustura Tıraş", category: "Erkek Berber", duration: 25, price: 22, staffIdx: [0] },
+        { name: "Sakal Tıraşı", category: "Erkek Bakımı", duration: 20, price: 18, staffIdx: [0, 1] },
+        { name: "Saç + Sakal", category: "Erkek Bakımı", duration: 45, price: 40, staffIdx: [0] },
+      ],
+      portfolio: [
+        { url: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=800&q=70" },
+        { url: "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&w=800&q=70" },
+      ],
+    },
   ];
 
   for (const b of businesses) {
@@ -333,6 +384,7 @@ async function main() {
         name: b.name,
         slug: slug(b.name),
         type: b.type,
+        serves: b.serves,
         description: b.description,
         coverImageUrl: b.coverImageUrl,
         logoUrl: b.logoUrl,
@@ -583,7 +635,9 @@ async function main() {
   console.log("             hairlab@kuafi.app / Business123! (Hair Lab)");
   console.log("             hairroom@kuafi.app / Business123! (The Hair Room)");
   console.log("             monohair@kuafi.app / Business123! (Mono Hair Studio)");
-  console.log("  Müşteri:   musteri@kuafi.app / Customer123!");
+  console.log("             ustabasi@kuafi.app / Business123! (Ustabaşı Berber)");
+  console.log(`  Müşteri:   musteri@kuafi.app / Customer123! (${customer.name}, Kadın segmenti)`);
+  console.log(`             musteri-erkek@kuafi.app / Customer123! (${maleCustomer.name}, Erkek segmenti)`);
 }
 
 main()

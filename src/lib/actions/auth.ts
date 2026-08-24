@@ -44,12 +44,15 @@ const businessTypeEnum = z.enum([
   "OTHER",
 ]);
 
+const businessServesEnum = z.enum(["MEN", "WOMEN", "UNISEX"]);
+
 const registerBusinessSchema = z.object({
   ownerName: z.string().min(2, "İsim en az 2 karakter olmalı"),
   email: z.string().email("Geçerli bir email girin"),
   password: z.string().min(6, "Şifre en az 6 karakter olmalı"),
   businessName: z.string().min(2, "İşletme adı en az 2 karakter olmalı"),
   businessType: businessTypeEnum,
+  serves: businessServesEnum,
 });
 
 export async function registerBusiness(input: unknown): Promise<ActionResult> {
@@ -57,7 +60,7 @@ export async function registerBusiness(input: unknown): Promise<ActionResult> {
   if (!parsed.success) {
     return { success: false, error: parsed.error.issues[0]?.message ?? "Geçersiz form" };
   }
-  const { ownerName, email, password, businessName, businessType } = parsed.data;
+  const { ownerName, email, password, businessName, businessType, serves } = parsed.data;
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
@@ -91,6 +94,7 @@ export async function registerBusiness(input: unknown): Promise<ActionResult> {
           name: businessName,
           slug,
           type: businessType,
+          serves,
           hours: {
             create: Array.from({ length: 7 }, (_, dayOfWeek) => ({
               dayOfWeek,

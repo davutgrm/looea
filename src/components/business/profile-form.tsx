@@ -5,12 +5,21 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
+import { Scissors, Sparkles, Users } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { BUSINESS_SERVES_LABELS } from "@/lib/business-types";
 import { updateBusinessProfile } from "@/lib/actions/business";
+
+const SERVES_OPTIONS = [
+  { value: "MEN" as const, icon: Scissors },
+  { value: "WOMEN" as const, icon: Sparkles },
+  { value: "UNISEX" as const, icon: Users },
+];
 
 const formSchema = z.object({
   name: z.string().min(2, "İşletme adı en az 2 karakter olmalı"),
@@ -21,6 +30,7 @@ const formSchema = z.object({
   email: z.string().optional(),
   instagram: z.string().optional(),
   website: z.string().optional(),
+  serves: z.enum(["MEN", "WOMEN", "UNISEX"]),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -28,6 +38,7 @@ type FormValues = z.infer<typeof formSchema>;
 export function ProfileForm({ initialValues }: { initialValues: FormValues }) {
   const router = useRouter();
   const form = useForm<FormValues>({ resolver: zodResolver(formSchema), defaultValues: initialValues });
+  const serves = form.watch("serves");
 
   async function onSubmit(values: FormValues) {
     const result = await updateBusinessProfile(values);
@@ -58,6 +69,28 @@ export function ProfileForm({ initialValues }: { initialValues: FormValues }) {
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="business-description">Açıklama</Label>
             <Textarea id="business-description" {...form.register("description")} />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label>Kime hizmet veriyorsunuz?</Label>
+            <div className="grid grid-cols-3 gap-2">
+              {SERVES_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => form.setValue("serves", opt.value, { shouldDirty: true })}
+                  className={cn(
+                    "flex flex-col items-center justify-center gap-2 rounded-2xl border-2 px-2 py-4 text-center transition-colors",
+                    serves === opt.value
+                      ? "border-app-accent bg-app-accent-soft"
+                      : "border-border hover:border-app-accent/40",
+                  )}
+                >
+                  <opt.icon className="size-5 text-app-accent" />
+                  <span className="text-xs leading-tight font-semibold">{BUSINESS_SERVES_LABELS[opt.value]}</span>
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
