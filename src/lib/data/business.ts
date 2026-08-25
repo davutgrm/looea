@@ -14,6 +14,7 @@ export type BusinessCard = {
   slug: string;
   name: string;
   type: string;
+  serves: BusinessServes;
   logoUrl: string | null;
   coverImageUrl: string | null;
   verified: boolean;
@@ -34,6 +35,7 @@ function toCard(
     slug: string;
     name: string;
     type: string;
+    serves: BusinessServes;
     logoUrl: string | null;
     coverImageUrl: string | null;
     verified: boolean;
@@ -51,6 +53,7 @@ function toCard(
     slug: business.slug,
     name: business.name,
     type: business.type,
+    serves: business.serves,
     logoUrl: business.logoUrl,
     coverImageUrl: business.coverImageUrl,
     verified: business.verified,

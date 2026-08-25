@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { completeOnboarding } from "@/lib/actions/customer";
+import { getStoredGuestSegment } from "@/lib/guest-segment";
 import { OnboardingShell } from "./onboarding-shell";
 import { SegmentStep } from "./steps/segment-step";
 import { BirthDateStep, isValidBirthDate, type BirthDateValue } from "./steps/birth-date-step";
@@ -40,9 +41,21 @@ export function OnboardingWizard({
   categories: { id: string; name: string; serves: "MEN" | "WOMEN" | "UNISEX" }[];
 }) {
   const router = useRouter();
+  const [resolved, setResolved] = useState(false);
   const [step, setStep] = useState(1);
   const [data, setData] = useState<FormState>(INITIAL_STATE);
   const [isPending, startTransition] = useTransition();
+
+  // A guest who already picked a segment on /kesfet or /ara (stored in localStorage)
+  // shouldn't be asked again — prefill it and skip straight to step 2.
+  useEffect(() => {
+    const stored = getStoredGuestSegment();
+    if (stored) {
+      setData((d) => ({ ...d, segment: stored }));
+      setStep(2);
+    }
+    setResolved(true);
+  }, []);
 
   const styleOptions: StyleOption[] = categories
     .filter((c) => c.serves === "UNISEX" || c.serves === (data.segment === "MALE" ? "MEN" : "WOMEN"))
@@ -85,6 +98,8 @@ export function OnboardingWizard({
     totalSteps: TOTAL_STEPS,
     onBack: step > 1 ? () => setStep((s) => s - 1) : undefined,
   };
+
+  if (!resolved) return null;
 
   if (step === 1) {
     return (

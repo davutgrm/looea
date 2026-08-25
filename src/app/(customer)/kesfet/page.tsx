@@ -6,12 +6,19 @@ import { getFavoriteIds } from "@/lib/data/favorites";
 import { servesForSegment } from "@/lib/business-types";
 import { CategoryChips } from "@/components/customer/category-chips";
 import { DiscoverRow } from "@/components/customer/discover-row";
+import { GuestKesfetView } from "@/components/customer/guest-kesfet-view";
 
 export default async function DiscoverPage() {
   const session = await auth();
-  const dbUser = session?.user
-    ? await prisma.user.findUnique({ where: { id: session.user.id }, select: { segment: true } })
-    : null;
+
+  if (!session?.user) {
+    // Segment unknown until localStorage is read client-side — fetch unfiltered and gate on the client.
+    const [categories, featured] = await Promise.all([getActiveCategories(), getFeaturedBusinesses(null, 16)]);
+    const newest = [...featured].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    return <GuestKesfetView categories={categories} featured={featured} newest={newest} />;
+  }
+
+  const dbUser = await prisma.user.findUnique({ where: { id: session.user.id }, select: { segment: true } });
   const serves = servesForSegment(dbUser?.segment);
 
   const [categories, featured, favoriteIds] = await Promise.all([
@@ -22,7 +29,7 @@ export default async function DiscoverPage() {
   const visibleCategories = serves ? categories.filter((c) => serves.includes(c.serves)) : categories;
 
   const newest = [...featured].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-  const isLoggedIn = !!session?.user;
+  const isLoggedIn = true;
 
   return (
     <div className="mx-auto max-w-6xl space-y-8 px-4 py-6">

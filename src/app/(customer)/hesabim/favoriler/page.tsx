@@ -25,6 +25,7 @@ export default async function FavoritesPage() {
     slug: f.business.slug,
     name: f.business.name,
     type: f.business.type,
+    serves: f.business.serves,
     logoUrl: f.business.logoUrl,
     coverImageUrl: f.business.coverImageUrl,
     verified: f.business.verified,

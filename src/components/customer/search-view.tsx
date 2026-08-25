@@ -14,9 +14,13 @@ import { Switch } from "@/components/ui/switch";
 import { MapView } from "@/components/map/map-view";
 import { BusinessCard } from "@/components/customer/business-card";
 import { useLocation } from "@/components/customer/location-provider";
+import { GuestSegmentGate } from "@/components/customer/guest-segment-gate";
+import { GuestSegmentSwitcher } from "@/components/customer/guest-segment-switcher";
 import type { MapBounds } from "@/lib/maps/types";
 import type { Category, BusinessServes } from "@/generated/prisma/client";
 import type { BusinessCard as BusinessCardData, BusinessSort } from "@/lib/data/business";
+import { servesForSegment } from "@/lib/business-types";
+import { useGuestSegment } from "@/lib/guest-segment";
 import { searchBusinessesAction, getAvailabilityBadges } from "@/lib/actions/search";
 
 const RADIUS_OPTIONS = [1, 5, 10, 20];
@@ -41,6 +45,7 @@ export function SearchView({
   serves?: BusinessServes[] | null;
 }) {
   const { coords } = useLocation();
+  const guest = useGuestSegment();
   const [view, setView] = useState<"list" | "map">("list");
   const [query] = useState(initialQuery);
   const [categorySlug, setCategorySlug] = useState(initialCategory);
@@ -80,16 +85,30 @@ export function SearchView({
     }
   }, [todayOnly, results]);
 
+  const effectiveServes = isLoggedIn ? (serves ?? null) : servesForSegment(guest.segment);
+
   const displayed = useMemo(() => {
-    if (!todayOnly) return results;
-    return results.filter((r) => availability[r.id]);
-  }, [results, todayOnly, availability]);
+    let list = results;
+    if (effectiveServes) list = list.filter((r) => effectiveServes.includes(r.serves));
+    if (todayOnly) list = list.filter((r) => availability[r.id]);
+    return list;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [results, todayOnly, availability, effectiveServes]);
+
+  const visibleCategories = useMemo(
+    () => (effectiveServes ? categories.filter((c) => effectiveServes.includes(c.serves)) : categories),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [categories, effectiveServes],
+  );
 
   const mapCenter = coords ?? { lat: 40.9903, lng: 29.0275 };
 
   const markers = displayed
     .filter((b) => b.location)
     .map((b) => ({ id: b.id, position: b.location! }));
+
+  if (!isLoggedIn && !guest.resolved) return null;
+  if (!isLoggedIn && !guest.segment) return <GuestSegmentGate onSelect={guest.select} />;
 
   return (
     <div className="flex h-[calc(100dvh-4rem)] flex-col md:h-[calc(100dvh-4rem)]">
@@ -101,7 +120,7 @@ export function SearchView({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Tüm kategoriler</SelectItem>
-            {categories.map((c) => (
+            {visibleCategories.map((c) => (
               <SelectItem key={c.id} value={c.slug}>
                 {c.name}
               </SelectItem>
@@ -143,6 +162,8 @@ export function SearchView({
             Bugün müsait
           </label>
         </div>
+
+        {!isLoggedIn && guest.segment && <GuestSegmentSwitcher value={guest.segment} onChange={guest.select} />}
 
         <div className="ml-auto flex items-center gap-1 rounded-full border p-1 md:hidden">
           <button
