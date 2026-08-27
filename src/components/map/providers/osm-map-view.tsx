@@ -1,13 +1,28 @@
 "use client";
 
-import "leaflet/dist/leaflet.css";
+import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
-import L from "leaflet";
+import * as maplibregl from "maplibre-gl";
 import type { MapViewProps, LatLng, MapMarkerData } from "@/lib/maps/types";
 import { cn } from "@/lib/utils";
 
-function pinIcon(selected: boolean, label?: string) {
+// OpenFreeMap: free, key-less, no account/card required — https://openfreemap.org.
+// We tried CARTO's "free" Positron tiles before; they started requiring an API key
+// and the map rendered "API KEY REQUIRED" watermarks. Do not go back to CARTO or
+// any other provider that can start gating behind a key.
+const STYLE_URL = "https://tiles.openfreemap.org/styles/positron";
+
+// MapLibre spawns its tile-parsing worker via `new Worker(new URL(...), {type:
+// "module"})`, which Next.js's bundler (webpack and Turbopack alike, as of
+// Next 16 / maplibre-gl 6) resolves to an empty URL — the worker silently
+// never parses any vector tiles (no error, no network request, just a
+// permanently gray basemap). Pointing at the prebuilt worker bundle copied to
+// `public/maplibre-gl-worker.mjs` (from `node_modules/maplibre-gl/dist/`)
+// sidesteps the broken auto-resolution. Re-copy that file if maplibre-gl is
+// ever upgraded.
+maplibregl.setWorkerUrl("/maplibre-gl-worker.mjs");
+
+function pinHtml(selected: boolean, label?: string) {
   const color = "var(--app-accent, #a21cdb)";
   const pinHeight = 40;
   const labelHtml = label
@@ -18,35 +33,24 @@ function pinIcon(selected: boolean, label?: string) {
         box-shadow:0 1px 2px rgba(0,0,0,0.08),0 4px 10px -2px rgba(0,0,0,0.15);
       ">${label}</span>`
     : "";
-  return L.divIcon({
-    className: "salonix-map-pin",
-    html: `<div style="position:relative; width:30px; height:${pinHeight}px;">
+  return `<div style="position:relative; width:30px; height:${pinHeight}px; cursor:pointer;">
       ${labelHtml}
       <svg width="30" height="40" viewBox="0 0 30 40" xmlns="http://www.w3.org/2000/svg">
         <path d="M15 0C6.7 0 0 6.7 0 15c0 10.5 15 25 15 25s15-14.5 15-25C30 6.7 23.3 0 15 0z" fill="${color}" opacity="${selected ? 1 : 0.9}"/>
         <circle cx="15" cy="15" r="6" fill="white"/>
       </svg>
-    </div>`,
-    iconSize: [30, pinHeight],
-    iconAnchor: [15, pinHeight],
-    popupAnchor: [0, -36],
-  });
+    </div>`;
 }
 
-function clusterIcon(count: number) {
+function clusterHtml(count: number) {
   const size = count < 10 ? 36 : count < 50 ? 44 : 52;
   const fontSize = count < 100 ? 14 : 12;
-  return L.divIcon({
-    className: "salonix-map-cluster",
-    html: `<div style="
-      width:${size}px; height:${size}px; border-radius:9999px;
+  return `<div style="
+      width:${size}px; height:${size}px; border-radius:9999px; cursor:pointer;
       background: var(--app-accent, #a21cdb); color:#fff; display:flex;
       align-items:center; justify-content:center; font:700 ${fontSize}px var(--font-grotesk, ui-sans-serif, sans-serif);
       box-shadow:0 2px 4px rgba(0,0,0,0.15), 0 8px 20px -6px rgba(0,0,0,0.3); border:3px solid white;
-    ">${count}</div>`,
-    iconSize: [size, size],
-    iconAnchor: [size / 2, size / 2],
-  });
+    ">${count}</div>`;
 }
 
 type ClusterPoint = { key: string; position: LatLng; count: number; marker?: MapMarkerData };
@@ -73,24 +77,6 @@ function clusterMarkers(markers: MapMarkerData[], zoom: number): ClusterPoint[] 
   });
 }
 
-function BoundsWatcher({ onBoundsChange, onZoom }: Pick<MapViewProps, "onBoundsChange"> & { onZoom: (z: number) => void }) {
-  useMapEvents({
-    moveend(e) {
-      if (!onBoundsChange) return;
-      const b = e.target.getBounds();
-      const c = e.target.getCenter();
-      onBoundsChange(
-        { north: b.getNorth(), south: b.getSouth(), east: b.getEast(), west: b.getWest() },
-        { lat: c.lat, lng: c.lng },
-      );
-    },
-    zoomend(e) {
-      onZoom(e.target.getZoom());
-    },
-  });
-  return null;
-}
-
 export default function OsmMapView({
   center,
   zoom = 13,
@@ -100,66 +86,82 @@ export default function OsmMapView({
   onBoundsChange,
   className,
 }: MapViewProps) {
-  const mapRef = useRef<L.Map | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<maplibregl.Map | null>(null);
+  const markerRefs = useRef<maplibregl.Marker[]>([]);
   const [liveZoom, setLiveZoom] = useState(zoom);
 
-  // The container can mount at 0x0 (e.g. behind a `hidden md:block` mobile list/map
-  // toggle) — Leaflet doesn't detect that resize on its own, so tiles never fill in
-  // once it becomes visible unless we tell it to recalculate.
+  // Callbacks are re-created every render by callers — keep refs so the map
+  // (created once) always invokes the latest without needing to be recreated.
+  const onBoundsChangeRef = useRef(onBoundsChange);
+  const onMarkerClickRef = useRef(onMarkerClick);
   useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const observer = new ResizeObserver(() => {
-      mapRef.current?.invalidateSize();
+    onBoundsChangeRef.current = onBoundsChange;
+  }, [onBoundsChange]);
+  useEffect(() => {
+    onMarkerClickRef.current = onMarkerClick;
+  }, [onMarkerClick]);
+
+  // center/zoom are only used as the initial viewport, matching the previous
+  // Leaflet behavior — updating them later does not recenter an existing map.
+  useEffect(() => {
+    if (!containerRef.current || mapRef.current) return;
+
+    const map = new maplibregl.Map({
+      container: containerRef.current,
+      style: STYLE_URL,
+      center: [center.lng, center.lat],
+      zoom,
+      attributionControl: { compact: true },
     });
-    observer.observe(el);
-    return () => observer.disconnect();
+    mapRef.current = map;
+
+    map.on("moveend", () => {
+      const b = map.getBounds();
+      const c = map.getCenter();
+      onBoundsChangeRef.current?.(
+        { north: b.getNorth(), south: b.getSouth(), east: b.getEast(), west: b.getWest() },
+        { lat: c.lat, lng: c.lng },
+      );
+    });
+    map.on("zoomend", () => setLiveZoom(map.getZoom()));
+
+    // The container can mount at 0x0 (e.g. behind a `hidden md:block` mobile
+    // list/map toggle); MapLibre doesn't detect that resize on its own.
+    const resizeObserver = new ResizeObserver(() => map.resize());
+    resizeObserver.observe(containerRef.current);
+
+    return () => {
+      resizeObserver.disconnect();
+      map.remove();
+      mapRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const clusters = useMemo(() => clusterMarkers(markers, liveZoom), [markers, liveZoom]);
 
-  const icons = useMemo(
-    () =>
-      clusters.map((c) =>
-        c.count > 1 ? clusterIcon(c.count) : pinIcon(c.marker!.id === selectedMarkerId, c.marker!.label),
-      ),
-    [clusters, selectedMarkerId],
-  );
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
 
-  return (
-    <div ref={containerRef} className={cn("overflow-hidden rounded-2xl", className)}>
-      <MapContainer
-        ref={mapRef}
-        center={[center.lat, center.lng]}
-        zoom={zoom}
-        scrollWheelZoom
-        zoomControl={false}
-        style={{ height: "100%", width: "100%" }}
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          maxZoom={19}
-        />
-        <BoundsWatcher onBoundsChange={onBoundsChange} onZoom={setLiveZoom} />
-        {clusters.map((c, i) => (
-          <Marker
-            key={c.key}
-            position={[c.position.lat, c.position.lng]}
-            icon={icons[i]}
-            eventHandlers={{
-              click: () => {
-                if (c.count > 1) {
-                  mapRef.current?.setView([c.position.lat, c.position.lng], Math.min(liveZoom + 3, 18));
-                } else {
-                  onMarkerClick?.(c.marker!.id);
-                }
-              },
-            }}
-          />
-        ))}
-      </MapContainer>
-    </div>
-  );
+    markerRefs.current.forEach((m) => m.remove());
+    markerRefs.current = clusters.map((c) => {
+      const el = document.createElement("div");
+      el.innerHTML = c.count > 1 ? clusterHtml(c.count) : pinHtml(c.marker!.id === selectedMarkerId, c.marker!.label);
+      const wrapper = el.firstElementChild as HTMLElement;
+      wrapper.addEventListener("click", () => {
+        if (c.count > 1) {
+          map.easeTo({ center: [c.position.lng, c.position.lat], zoom: Math.min(liveZoom + 3, 18) });
+        } else {
+          onMarkerClickRef.current?.(c.marker!.id);
+        }
+      });
+      return new maplibregl.Marker({ element: wrapper, anchor: c.count > 1 ? "center" : "bottom" })
+        .setLngLat([c.position.lng, c.position.lat])
+        .addTo(map);
+    });
+  }, [clusters, selectedMarkerId, liveZoom]);
+
+  return <div ref={containerRef} className={cn("overflow-hidden rounded-2xl", className)} />;
 }
