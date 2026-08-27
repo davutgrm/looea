@@ -1,6 +1,7 @@
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import type { Metadata } from "next";
 import {
   Star,
   MapPin,
@@ -18,6 +19,8 @@ import { isAvailableNowEffective } from "@/lib/business-availability";
 import { prisma } from "@/lib/prisma";
 import { DAY_LABELS, isOpenNow, sortedWeek } from "@/lib/business-hours";
 import { getDirectionsUrl } from "@/lib/maps/directions";
+import { getBusinessPath, getBusinessBookingPath } from "@/lib/business-url";
+import { buildBusinessJsonLd } from "@/lib/seo/business-jsonld";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BusinessStickyBar } from "@/components/customer/business-sticky-bar";
@@ -25,14 +28,46 @@ import { ReviewCard } from "@/components/customer/review-card";
 import { Price } from "@/components/customer/price";
 import { MapView } from "@/components/map/map-view";
 
-export default async function BusinessProfilePage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+
+type Params = { sehir: string; ilce: string; slug: string };
+
+export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { slug } = await params;
+  const business = await getBusinessBySlug(slug);
+  if (!business || !business.active) return {};
+
+  const canonical = getBusinessPath({ slug: business.slug, city: business.location?.city, district: business.location?.district });
+  const cityLabel = business.location ? `${business.location.district}, ${business.location.city}` : "";
+  const title = `${business.name}${cityLabel ? ` - ${cityLabel}` : ""} | Online Randevu - Kuafi`;
+  const description =
+    business.description?.slice(0, 155) ??
+    `${business.name}${cityLabel ? ` (${cityLabel})` : ""} hizmetlerini incele, fiyatları gör, saniyeler içinde online randevu al.`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical },
+    openGraph: {
+      title,
+      description,
+      url: canonical,
+      type: "website",
+      images: business.coverImageUrl ? [business.coverImageUrl] : undefined,
+    },
+  };
+}
+
+export default async function BusinessProfilePage({ params }: { params: Promise<Params> }) {
+  const { sehir, ilce, slug } = await params;
   const [session, business] = await Promise.all([auth(), getBusinessBySlug(slug)]);
   if (!business || !business.active) notFound();
+
+  const canonicalPath = getBusinessPath({ slug: business.slug, city: business.location?.city, district: business.location?.district });
+  if (canonicalPath !== `/kuafor/${sehir}/${ilce}/${slug}`) {
+    permanentRedirect(canonicalPath);
+  }
+  const bookingPath = getBusinessBookingPath({ slug: business.slug, city: business.location?.city, district: business.location?.district });
 
   const isFavorite = session?.user
     ? !!(await prisma.favorite.findUnique({
@@ -47,12 +82,18 @@ export default async function BusinessProfilePage({
   const planName = business.subscription?.plan?.name;
   const showPlanBadge = business.subscription?.status === "ACTIVE" && planName;
   const previewReviews = business.reviews.slice(0, 2);
+  const jsonLd = buildBusinessJsonLd(business, `${SITE_URL}${canonicalPath}`);
 
   return (
     <div className="pb-24">
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger -- structured data must be raw JSON for search engines
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <BusinessStickyBar
         businessId={business.id}
-        businessSlug={business.slug}
+        bookingPath={bookingPath}
         businessName={business.name}
         isFavorite={isFavorite}
         isLoggedIn={!!session?.user}
@@ -115,12 +156,18 @@ export default async function BusinessProfilePage({
           <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
             <span className="flex items-center gap-1 font-medium">
               <Star className="size-4 fill-app-accent text-app-accent" />
-              {business.ratingAvg > 0 ? business.ratingAvg.toFixed(1) : "Yeni"}
-              <span className="text-muted-foreground">({business.ratingCount} değerlendirme)</span>
+              {business.ratingAvg > 0 ? (
+                <>
+                  {business.ratingAvg.toFixed(1)}
+                  <span className="text-muted-foreground">({business.ratingCount} değerlendirme)</span>
+                </>
+              ) : (
+                "Yeni"
+              )}
             </span>
             {business.location && (
               <span className="flex items-center gap-1 text-muted-foreground">
-                <MapPin className="size-4" /> {business.location.city}
+                <MapPin className="size-4" /> {business.location.district}, {business.location.city}
               </span>
             )}
             <span
@@ -144,7 +191,7 @@ export default async function BusinessProfilePage({
               </Button>
             )}
             <Button variant="accent" asChild>
-              <Link href={`/isletme/${business.slug}/randevu-al`}>Randevu Al</Link>
+              <Link href={bookingPath}>Randevu Al</Link>
             </Button>
           </div>
         </div>
@@ -177,7 +224,7 @@ export default async function BusinessProfilePage({
                     <div className="flex shrink-0 items-center gap-3">
                       <p className="font-semibold"><Price amount={service.price} /></p>
                       <Button variant="accent" size="sm" asChild>
-                        <Link href={`/isletme/${business.slug}/randevu-al?hizmet=${service.id}`}>Seç</Link>
+                        <Link href={`${bookingPath}?hizmet=${service.id}`}>Seç</Link>
                       </Button>
                     </div>
                   </div>
@@ -190,7 +237,7 @@ export default async function BusinessProfilePage({
               <section>
                 <h2 className="text-xl font-bold">Nerede</h2>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  {business.location.address}, {business.location.city}
+                  {business.location.address}, {business.location.district}, {business.location.city}
                 </p>
                 <div className="relative mt-3 overflow-hidden rounded-2xl border">
                   <MapView
@@ -294,18 +341,22 @@ export default async function BusinessProfilePage({
               <h3 className="text-sm font-semibold text-foreground">Genel Puan</h3>
               <div className="mt-1 flex items-baseline gap-2">
                 <span className="text-3xl font-bold">
-                  {business.ratingAvg > 0 ? business.ratingAvg.toFixed(1) : "—"}
+                  {business.ratingAvg > 0 ? business.ratingAvg.toFixed(1) : "Yeni"}
                 </span>
-                <div className="flex gap-0.5">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`size-3.5 ${i < Math.round(business.ratingAvg) ? "fill-app-accent text-app-accent" : "text-muted"}`}
-                    />
-                  ))}
-                </div>
+                {business.ratingAvg > 0 && (
+                  <div className="flex gap-0.5">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`size-3.5 ${i < Math.round(business.ratingAvg) ? "fill-app-accent text-app-accent" : "text-muted"}`}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
-              <p className="mt-1 text-xs text-muted-foreground">{business.ratingCount} değerlendirme</p>
+              {business.ratingCount > 0 && (
+                <p className="mt-1 text-xs text-muted-foreground">{business.ratingCount} değerlendirme</p>
+              )}
 
               {previewReviews.length > 0 && (
                 <div className="mt-4 space-y-4 border-t pt-4">
@@ -317,6 +368,7 @@ export default async function BusinessProfilePage({
                       rating={r.rating}
                       comment={r.comment}
                       createdAt={r.createdAt}
+                      clamp
                     />
                   ))}
                 </div>

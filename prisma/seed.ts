@@ -203,6 +203,7 @@ async function main() {
     description: string;
     address: string;
     city: string;
+    district: string;
     lat: number;
     lng: number;
     coverImageUrl: string;
@@ -224,6 +225,7 @@ async function main() {
         "Kadıköy'ün merkezinde, balayage ve renklendirme konusunda uzmanlaşmış butik kuaför salonu.",
       address: "Caferağa Mah. Moda Cad. No:24, Kadıköy",
       city: "İstanbul",
+      district: "Kadıköy",
       lat: 40.9903,
       lng: 29.0275,
       coverImageUrl: "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?auto=format&fit=crop&w=1200&q=70",
@@ -256,6 +258,7 @@ async function main() {
       description: "Beşiktaş'ta klasik ve modern erkek tıraş teknikleri bir arada.",
       address: "Sinanpaşa Mah. Beşiktaş Cad. No:11, Beşiktaş",
       city: "İstanbul",
+      district: "Beşiktaş",
       lat: 41.0422,
       lng: 29.0061,
       coverImageUrl: "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=1200&q=70",
@@ -286,6 +289,7 @@ async function main() {
       description: "Şişli'de cilt bakımı, kaş-kirpik ve makyaj hizmetlerinde uzman güzellik salonu.",
       address: "Halaskargazi Cad. No:88, Şişli",
       city: "İstanbul",
+      district: "Şişli",
       lat: 41.0602,
       lng: 28.9877,
       coverImageUrl: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=1200&q=70",
@@ -317,6 +321,7 @@ async function main() {
       description: "Üsküdar'da jel tırnak ve protez tırnak konusunda deneyimli nail stüdyosu.",
       address: "Mimar Sinan Mah. Hakimiyet-i Milliye Cad. No:5, Üsküdar",
       city: "İstanbul",
+      district: "Üsküdar",
       lat: 41.0226,
       lng: 29.0159,
       coverImageUrl: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=1200&q=70",
@@ -345,6 +350,7 @@ async function main() {
       description: "Beyoğlu'nda üç kuşaktır süren usta-çırak geleneğiyle klasik ustura tıraşı ve modern erkek kesimleri bir arada.",
       address: "Asmalımescit Mah. İstiklal Cad. No:142, Beyoğlu",
       city: "İstanbul",
+      district: "Beyoğlu",
       lat: 41.0328,
       lng: 28.9773,
       coverImageUrl: "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&w=1200&q=70",
@@ -397,6 +403,7 @@ async function main() {
           create: {
             address: b.address,
             city: b.city,
+            district: b.district,
             country: "Türkiye",
             latitude: b.lat,
             longitude: b.lng,

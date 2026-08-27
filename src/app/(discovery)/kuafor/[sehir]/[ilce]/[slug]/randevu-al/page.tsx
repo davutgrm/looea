@@ -7,13 +7,16 @@ export default async function BookAppointmentPage({
   params,
   searchParams,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ sehir: string; ilce: string; slug: string }>;
   searchParams: Promise<{ hizmet?: string }>;
 }) {
-  const { slug } = await params;
+  const { sehir, ilce, slug } = await params;
   const { hizmet } = await searchParams;
   const session = await auth();
-  if (!session?.user) redirect(`/giris?callbackUrl=/isletme/${slug}/randevu-al`);
+  if (!session?.user) {
+    const callbackUrl = `/kuafor/${sehir}/${ilce}/${slug}/randevu-al${hizmet ? `?hizmet=${hizmet}` : ""}`;
+    redirect(`/giris?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+  }
 
   const business = await getBusinessBySlug(slug);
   if (!business || !business.active) notFound();

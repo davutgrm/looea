@@ -9,6 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CancelAppointmentButton } from "@/components/customer/cancel-appointment-button";
 import { ReviewDialog } from "@/components/customer/review-dialog";
 import { Price } from "@/components/customer/price";
+import { getBusinessPath } from "@/lib/business-url";
+import { cn } from "@/lib/utils";
 
 const STATUS_VARIANT: Record<string, string> = {
   PENDING: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
@@ -24,7 +26,7 @@ export default async function MyAppointmentsPage() {
   const appointments = await prisma.appointment.findMany({
     where: { customerId: user.id },
     include: {
-      business: { select: { name: true, slug: true, coverImageUrl: true } },
+      business: { select: { name: true, slug: true, coverImageUrl: true, location: { select: { city: true, district: true } } } },
       service: { select: { name: true } },
       staff: { select: { name: true } },
       review: { select: { id: true } },
@@ -94,7 +96,7 @@ function AppointmentCard({
     startTime: string;
     price: number;
     status: string;
-    business: { name: string; slug: string; coverImageUrl: string | null };
+    business: { name: string; slug: string; coverImageUrl: string | null; location: { city: string; district: string } | null };
     service: { name: string };
     staff: { name: string } | null;
   };
@@ -102,7 +104,7 @@ function AppointmentCard({
 }) {
   return (
     <div className="flex gap-3 rounded-2xl border bg-card p-3 shadow-sm">
-      <Link href={`/isletme/${appointment.business.slug}`} className="flex flex-1 gap-3">
+      <Link href={getBusinessPath({ slug: appointment.business.slug, city: appointment.business.location?.city, district: appointment.business.location?.district })} className="flex flex-1 gap-3">
         <div className="relative size-16 shrink-0 overflow-hidden rounded-xl bg-muted">
           {appointment.business.coverImageUrl && (
             <Image src={appointment.business.coverImageUrl} alt="" fill className="object-cover" />
@@ -110,8 +112,8 @@ function AppointmentCard({
         </div>
         <div className="flex-1">
           <div className="flex items-start justify-between gap-2">
-            <p className="font-semibold">{appointment.business.name}</p>
-            <Badge className={STATUS_VARIANT[appointment.status]} variant="secondary">
+            <p className="min-w-0 truncate font-semibold">{appointment.business.name}</p>
+            <Badge className={cn("shrink-0", STATUS_VARIANT[appointment.status])} variant="secondary">
               {APPOINTMENT_STATUS_LABELS[appointment.status as keyof typeof APPOINTMENT_STATUS_LABELS]}
             </Badge>
           </div>

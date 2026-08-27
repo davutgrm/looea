@@ -13,6 +13,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { MapView } from "@/components/map/map-view";
 import { BusinessCard } from "@/components/customer/business-card";
+import { MapBottomSheet } from "@/components/customer/map-bottom-sheet";
 import { useLocation } from "@/components/customer/location-provider";
 import { GuestSegmentGate } from "@/components/customer/guest-segment-gate";
 import { GuestSegmentSwitcher } from "@/components/customer/guest-segment-switcher";
@@ -23,7 +24,9 @@ import { servesForSegment } from "@/lib/business-types";
 import { useGuestSegment } from "@/lib/guest-segment";
 import { searchBusinessesAction, getAvailabilityBadges } from "@/lib/actions/search";
 
-const RADIUS_OPTIONS = [1, 5, 10, 20];
+const RADIUS_OPTIONS = [1, 5, 10, 25];
+const RATING_OPTIONS = [3, 4, 4.5];
+const PRICE_OPTIONS = [200, 500, 1000];
 
 export function SearchView({
   initialQuery,
@@ -50,12 +53,15 @@ export function SearchView({
   const [query] = useState(initialQuery);
   const [categorySlug, setCategorySlug] = useState(initialCategory);
   const [radiusKm, setRadiusKm] = useState<number | null>(null);
+  const [minRating, setMinRating] = useState<number | null>(null);
+  const [maxPrice, setMaxPrice] = useState<number | null>(null);
   const [sort, setSort] = useState<BusinessSort>(initialSort);
   const [todayOnly, setTodayOnly] = useState(false);
   const [results, setResults] = useState(initialResults);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [pendingBounds, setPendingBounds] = useState<MapBounds | null>(null);
   const [availability, setAvailability] = useState<Record<string, { date: Date; time: string } | null>>({});
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   const runSearch = (bounds?: MapBounds) => {
@@ -68,6 +74,8 @@ export function SearchView({
         sort,
         bounds,
         serves,
+        minRating: minRating ?? undefined,
+        maxPrice: maxPrice ?? undefined,
       });
       setResults(data);
       setPendingBounds(null);
@@ -77,11 +85,16 @@ export function SearchView({
   useEffect(() => {
     runSearch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [categorySlug, radiusKm, sort, coords?.lat, coords?.lng]);
+  }, [categorySlug, radiusKm, minRating, maxPrice, sort, coords?.lat, coords?.lng]);
 
   useEffect(() => {
     if (todayOnly && results.length > 0) {
-      getAvailabilityBadges(results.map((r) => r.id)).then(setAvailability);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- kicks off an async fetch; loading flag must flip before it resolves
+      setAvailabilityLoading(true);
+      getAvailabilityBadges(results.map((r) => r.id)).then((data) => {
+        setAvailability(data);
+        setAvailabilityLoading(false);
+      });
     }
   }, [todayOnly, results]);
 
@@ -90,10 +103,12 @@ export function SearchView({
   const displayed = useMemo(() => {
     let list = results;
     if (effectiveServes) list = list.filter((r) => effectiveServes.includes(r.serves));
-    if (todayOnly) list = list.filter((r) => availability[r.id]);
+    // Skip the todayOnly filter while badges are still loading — otherwise every
+    // result briefly disappears (no availability entry yet) before popping back.
+    if (todayOnly && !availabilityLoading) list = list.filter((r) => availability[r.id]);
     return list;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [results, todayOnly, availability, effectiveServes]);
+  }, [results, todayOnly, availability, availabilityLoading, effectiveServes]);
 
   const visibleCategories = useMemo(
     () => (effectiveServes ? categories.filter((c) => effectiveServes.includes(c.serves)) : categories),
@@ -106,6 +121,8 @@ export function SearchView({
   const markers = displayed
     .filter((b) => b.location)
     .map((b) => ({ id: b.id, position: b.location! }));
+
+  const selectedBusiness = selectedId ? displayed.find((b) => b.id === selectedId) ?? null : null;
 
   if (!isLoggedIn && !guest.resolved) return null;
   if (!isLoggedIn && !guest.segment) return <GuestSegmentGate onSelect={guest.select} />;
@@ -140,6 +157,40 @@ export function SearchView({
             {RADIUS_OPTIONS.map((r) => (
               <SelectItem key={r} value={String(r)}>
                 {r} km
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={minRating ? String(minRating) : "any"}
+          onValueChange={(v) => setMinRating(v === "any" ? null : Number(v))}
+        >
+          <SelectTrigger className="h-9 w-auto min-w-[130px]">
+            <SelectValue placeholder="Minimum puan" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="any">Tüm puanlar</SelectItem>
+            {RATING_OPTIONS.map((r) => (
+              <SelectItem key={r} value={String(r)}>
+                {r}+ yıldız
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={maxPrice ? String(maxPrice) : "any"}
+          onValueChange={(v) => setMaxPrice(v === "any" ? null : Number(v))}
+        >
+          <SelectTrigger className="h-9 w-auto min-w-[140px]">
+            <SelectValue placeholder="Fiyat aralığı" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="any">Tüm fiyatlar</SelectItem>
+            {PRICE_OPTIONS.map((p) => (
+              <SelectItem key={p} value={String(p)}>
+                {p}₺&apos;ye kadar
               </SelectItem>
             ))}
           </SelectContent>
@@ -184,7 +235,9 @@ export function SearchView({
       <div className="grid flex-1 overflow-hidden md:grid-cols-2">
         {/* List */}
         <div className={`overflow-y-auto p-4 ${view === "map" ? "hidden md:block" : ""}`}>
-          {isPending && <p className="pb-2 text-xs text-muted-foreground">Aranıyor...</p>}
+          {(isPending || availabilityLoading) && (
+            <p className="pb-2 text-xs text-muted-foreground">Aranıyor...</p>
+          )}
           {displayed.length === 0 ? (
             <p className="py-10 text-center text-sm text-muted-foreground">
               Bu kriterlere uygun işletme bulunamadı.
@@ -225,6 +278,9 @@ export function SearchView({
                 <Navigation className="size-3.5" /> Bu bölgede ara
               </Button>
             </div>
+          )}
+          {selectedBusiness && (
+            <MapBottomSheet business={selectedBusiness} onClose={() => setSelectedId(null)} />
           )}
         </div>
       </div>

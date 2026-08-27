@@ -51,6 +51,7 @@ export function OnboardingWizard({
   useEffect(() => {
     const stored = getStoredGuestSegment();
     if (stored) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time hydration from localStorage, unavailable during SSR/render
       setData((d) => ({ ...d, segment: stored }));
       setStep(2);
     }

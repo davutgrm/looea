@@ -35,6 +35,7 @@ export default async function FavoritesPage() {
     ratingCount: f.business.ratingCount,
     createdAt: f.business.createdAt,
     city: f.business.location?.city ?? null,
+    district: f.business.location?.district ?? null,
     location: f.business.location
       ? { lat: f.business.location.latitude, lng: f.business.location.longitude }
       : null,

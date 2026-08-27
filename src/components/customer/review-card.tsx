@@ -10,6 +10,7 @@ export function ReviewCard({
   comment,
   createdAt,
   className,
+  clamp = false,
 }: {
   name: string;
   avatarUrl?: string | null;
@@ -17,6 +18,8 @@ export function ReviewCard({
   comment?: string | null;
   createdAt: Date;
   className?: string;
+  /** Truncate long comments to 2 lines — only for tight preview contexts (e.g. sidebar). */
+  clamp?: boolean;
 }) {
   return (
     <div className={cn("flex items-start gap-3", className)}>
@@ -42,7 +45,7 @@ export function ReviewCard({
           </div>
         </div>
         {comment && (
-          <p className="mt-2 line-clamp-2 rounded-xl bg-muted/60 px-3 py-2 text-xs text-foreground">
+          <p className={cn("mt-2 rounded-xl bg-muted/60 px-3 py-2 text-xs text-foreground", clamp && "line-clamp-2")}>
             {comment}
           </p>
         )}

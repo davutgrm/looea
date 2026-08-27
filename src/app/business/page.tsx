@@ -16,6 +16,7 @@ import { AppointmentStatusBadge } from "@/components/business/status-badge";
 import { Price } from "@/components/business/price";
 import { AvailabilityToggle } from "@/components/business/availability-toggle";
 import { ProfileIncompleteBanner } from "@/components/business/profile-banner";
+import { getBusinessPath } from "@/lib/business-url";
 
 export default async function BusinessOverviewPage() {
   const { businessId } = await requireBusiness();
@@ -132,7 +133,7 @@ export default async function BusinessOverviewPage() {
     { label: "Çalışan ekle", done: staffCount > 0, href: "/business/calisanlar" },
     { label: "Çalışma saatlerini ayarla", done: hoursConfigured, href: "/business/ayarlar" },
     { label: "Portföy fotoğrafı yükle", done: portfolioCount > 0, href: "/business/portfoy" },
-    { label: "Profil linkini paylaş", done: coreSetupDone, href: `/isletme/${business.slug}` },
+    { label: "Profil linkini paylaş", done: coreSetupDone, href: getBusinessPath({ slug: business.slug, city: location?.city, district: location?.district }) },
   ];
 
   return (
@@ -177,7 +178,7 @@ export default async function BusinessOverviewPage() {
                 title="Yaklaşan randevu yok"
                 description="Onaylanmış veya bekleyen randevular burada görünecek."
                 action={
-                  <Link href={`/isletme/${business.slug}`} className="text-sm font-medium text-app-accent hover:underline">
+                  <Link href={getBusinessPath({ slug: business.slug, city: location?.city, district: location?.district })} className="text-sm font-medium text-app-accent hover:underline">
                     Profil linkini paylaş
                   </Link>
                 }

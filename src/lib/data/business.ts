@@ -23,6 +23,7 @@ export type BusinessCard = {
   ratingAvg: number;
   ratingCount: number;
   city: string | null;
+  district: string | null;
   location: LatLng | null;
   distanceKm: number | null;
   startingPrice: number | null;
@@ -45,7 +46,7 @@ function toCard(
     ratingAvg: number;
     ratingCount: number;
     createdAt: Date;
-    location: { city: string; latitude: number; longitude: number } | null;
+    location: { city: string; district: string; latitude: number; longitude: number } | null;
     services: { price: number }[];
   },
   origin?: LatLng | null,
@@ -64,6 +65,7 @@ function toCard(
     ratingCount: business.ratingCount,
     createdAt: business.createdAt,
     city: business.location?.city ?? null,
+    district: business.location?.district ?? null,
     location: business.location
       ? { lat: business.location.latitude, lng: business.location.longitude }
       : null,
@@ -100,8 +102,12 @@ export async function searchBusinesses(params: {
   sort?: BusinessSort;
   bounds?: { north: number; south: number; east: number; west: number };
   serves?: BusinessServes[] | null;
+  city?: string;
+  district?: string;
+  minRating?: number;
+  maxPrice?: number;
 }): Promise<BusinessCard[]> {
-  const { query, categorySlug, origin, radiusKm, sort = "distance", bounds, serves } = params;
+  const { query, categorySlug, origin, radiusKm, sort = "distance", bounds, serves, city, district, minRating, maxPrice } = params;
 
   const businesses = await prisma.business.findMany({
     where: {
@@ -118,14 +124,21 @@ export async function searchBusinesses(params: {
       ...(categorySlug
         ? { services: { some: { category: { slug: categorySlug } } } }
         : {}),
-      ...(bounds
+      ...(bounds || city || district
         ? {
             location: {
-              latitude: { gte: bounds.south, lte: bounds.north },
-              longitude: { gte: bounds.west, lte: bounds.east },
+              ...(bounds
+                ? {
+                    latitude: { gte: bounds.south, lte: bounds.north },
+                    longitude: { gte: bounds.west, lte: bounds.east },
+                  }
+                : {}),
+              ...(city ? { city } : {}),
+              ...(district ? { district } : {}),
             },
           }
         : {}),
+      ...(minRating ? { ratingAvg: { gte: minRating } } : {}),
     },
     include: cardInclude,
   });
@@ -134,6 +147,9 @@ export async function searchBusinesses(params: {
 
   if (origin && radiusKm) {
     cards = cards.filter((c) => c.distanceKm === null || c.distanceKm <= radiusKm);
+  }
+  if (maxPrice) {
+    cards = cards.filter((c) => c.startingPrice === null || c.startingPrice <= maxPrice);
   }
 
   switch (sort) {
@@ -174,6 +190,23 @@ export async function getBusinessBySlug(slug: string) {
       subscription: { include: { plan: true } },
     },
   });
+}
+
+export async function getNewestBusinesses(
+  limit = 12,
+  serves?: BusinessServes[] | null,
+): Promise<BusinessCard[]> {
+  const businesses = await prisma.business.findMany({
+    where: { active: true, ...(serves ? { serves: { in: serves } } : {}) },
+    include: cardInclude,
+    orderBy: { createdAt: "desc" },
+    take: limit,
+  });
+  return businesses.map((b) => toCard(b));
+}
+
+export async function getActiveBusinessCount(serves?: BusinessServes[] | null): Promise<number> {
+  return prisma.business.count({ where: { active: true, ...(serves ? { serves: { in: serves } } : {}) } });
 }
 
 export async function getNextAvailableSlot(businessId: string): Promise<{ date: Date; time: string } | null> {

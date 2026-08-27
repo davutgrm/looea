@@ -9,13 +9,13 @@ import { FavoriteButton } from "./favorite-button";
 
 export function BusinessStickyBar({
   businessId,
-  businessSlug,
+  bookingPath,
   businessName,
   isFavorite,
   isLoggedIn,
 }: {
   businessId: string;
-  businessSlug: string;
+  bookingPath: string;
   businessName: string;
   isFavorite: boolean;
   isLoggedIn: boolean;
@@ -47,7 +47,7 @@ export function BusinessStickyBar({
       />
 
       <Button variant="accent" size="sm" asChild>
-        <Link href={`/isletme/${businessSlug}/randevu-al`}>Randevu Al</Link>
+        <Link href={bookingPath}>Randevu Al</Link>
       </Button>
     </div>
   );

@@ -163,12 +163,14 @@ model BusinessLocation {
 
   address    String
   city       String
+  district   String  @default("Merkez")
   country    String  @default("Türkiye")
   postalCode String?
   latitude   Float
   longitude  Float
 
   @@index([city])
+  @@index([city, district])
   @@index([latitude, longitude])
 }
 

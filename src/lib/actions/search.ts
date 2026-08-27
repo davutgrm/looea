@@ -12,6 +12,8 @@ export async function searchBusinessesAction(params: {
   sort?: BusinessSort;
   bounds?: MapBounds;
   serves?: BusinessServes[] | null;
+  minRating?: number;
+  maxPrice?: number;
 }) {
   return searchBusinesses(params);
 }

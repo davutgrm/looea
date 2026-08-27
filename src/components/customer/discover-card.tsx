@@ -3,6 +3,7 @@ import Image from "next/image";
 import { Star, MapPin, BadgeCheck } from "lucide-react";
 import { formatDistance } from "@/lib/maps/distance";
 import type { BusinessCard as BusinessCardData } from "@/lib/data/business";
+import { getBusinessPath } from "@/lib/business-url";
 import { FavoriteButton } from "./favorite-button";
 
 export function DiscoverCard({
@@ -16,8 +17,8 @@ export function DiscoverCard({
 }) {
   return (
     <Link
-      href={`/isletme/${business.slug}`}
-      className="group relative block aspect-[3/4] w-[280px] shrink-0 overflow-hidden rounded-[22px] bg-app-accent-soft shadow-sm"
+      href={getBusinessPath(business)}
+      className="group relative block aspect-[3/4] w-[280px] shrink-0 overflow-hidden rounded-[22px] bg-app-accent-soft shadow-sm md:w-full md:shrink"
     >
       {business.coverImageUrl && (
         <Image

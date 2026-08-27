@@ -24,6 +24,7 @@ export function useGuestSegment() {
   const [segment, setSegment] = useState<ClientSegment | null>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time hydration from localStorage, unavailable during SSR/render
     setSegment(getStoredGuestSegment());
     setResolved(true);
   }, []);

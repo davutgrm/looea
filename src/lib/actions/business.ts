@@ -10,6 +10,7 @@ import { getPaymentProvider } from "@/lib/payments/provider";
 import { getAvailability, mergeAnyStaffSlots } from "@/lib/availability";
 import { parseDateOnly } from "@/lib/date";
 import { normalizeTurkishPhone } from "@/lib/phone";
+import { getBusinessPath } from "@/lib/business-url";
 
 export type ActionResult<T = undefined> =
   | { success: true; data: T }
@@ -665,13 +666,14 @@ export async function setAvailableNow(
   const business = await prisma.business.update({
     where: { id: businessId },
     data: { availableNow, availableNowUntil },
-    select: { slug: true },
+    select: { slug: true, location: { select: { city: true, district: true } } },
   });
 
   revalidatePath("/business");
   revalidatePath("/kesfet");
   revalidatePath("/ara");
   revalidatePath(`/isletme/${business.slug}`);
+  revalidatePath(getBusinessPath({ slug: business.slug, city: business.location?.city, district: business.location?.district }));
   return { success: true, data: undefined };
 }
 
@@ -723,7 +725,8 @@ export async function updateBusinessProfile(input: unknown): Promise<ActionResul
 
 const locationSchema = z.object({
   address: z.string().min(2, "Adres gerekli"),
-  city: z.string().min(1, "Şehir gerekli"),
+  city: z.string().min(1, "İl gerekli"),
+  district: z.string().min(1, "İlçe gerekli"),
   postalCode: z.string().optional(),
   latitude: z.coerce.number(),
   longitude: z.coerce.number(),
@@ -735,12 +738,12 @@ export async function updateBusinessLocation(input: unknown): Promise<ActionResu
   const parsed = locationSchema.safeParse(input);
   if (!parsed.success) return fail(firstIssue(parsed.error));
 
-  const { address, city, postalCode, latitude, longitude } = parsed.data;
+  const { address, city, district, postalCode, latitude, longitude } = parsed.data;
 
   await prisma.businessLocation.upsert({
     where: { businessId },
-    update: { address, city, postalCode: postalCode || null, latitude, longitude },
-    create: { businessId, address, city, postalCode: postalCode || null, latitude, longitude },
+    update: { address, city, district, postalCode: postalCode || null, latitude, longitude },
+    create: { businessId, address, city, district, postalCode: postalCode || null, latitude, longitude },
   });
 
   revalidatePath("/business/ayarlar");

@@ -3,11 +3,12 @@ import Link from "next/link";
 import { Heart, MapPin, Star } from "lucide-react";
 import { BUSINESS_TYPE_LABELS } from "@/lib/business-types";
 import type { BusinessCard } from "@/lib/data/business";
+import { getBusinessPath } from "@/lib/business-url";
 
 export function ShowcaseCard({ business }: { business: BusinessCard }) {
   return (
     <Link
-      href={`/isletme/${business.slug}`}
+      href={getBusinessPath(business)}
       className="group block shrink-0 overflow-hidden rounded-[22px] bg-card shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_28px_-14px_rgba(0,0,0,0.18)] transition-shadow hover:shadow-[0_1px_2px_rgba(0,0,0,0.06),0_20px_36px_-16px_rgba(162,28,219,0.28)]"
     >
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">

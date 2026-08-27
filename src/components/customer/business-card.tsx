@@ -4,6 +4,7 @@ import { Star, MapPin, BadgeCheck } from "lucide-react";
 import { BUSINESS_TYPE_LABELS } from "@/lib/business-types";
 import { formatDistance } from "@/lib/maps/distance";
 import type { BusinessCard as BusinessCardData } from "@/lib/data/business";
+import { getBusinessPath } from "@/lib/business-url";
 import { FavoriteButton } from "./favorite-button";
 import { Price } from "./price";
 
@@ -20,7 +21,7 @@ export function BusinessCard({
 }) {
   return (
     <Link
-      href={`/isletme/${business.slug}`}
+      href={getBusinessPath(business)}
       className="group block overflow-hidden rounded-2xl border bg-card shadow-sm transition-shadow hover:shadow-md"
     >
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">

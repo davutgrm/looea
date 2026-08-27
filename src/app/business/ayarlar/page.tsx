@@ -36,6 +36,7 @@ export default async function AyarlarPage() {
         initialValues={{
           address: location?.address ?? "",
           city: location?.city ?? "",
+          district: location?.district ?? "",
           postalCode: location?.postalCode ?? "",
           latitude: location?.latitude ?? 41.0082,
           longitude: location?.longitude ?? 28.9784,
