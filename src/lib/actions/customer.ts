@@ -63,7 +63,7 @@ export async function createAppointment(
 
   const day = parseDateOnly(date);
 
-  const availability = await getAvailability({ businessId, serviceId, date: day, staffId });
+  const availability = await getAvailability({ businessId, serviceIds: [serviceId], date: day, staffId });
   let resolvedStaffId = staffId;
   const candidate = availability.find((a) => a.slots.includes(time) && (!staffId || a.staffId === staffId));
   if (!candidate) return err("Seçtiğiniz saat artık müsait değil, lütfen başka bir saat seçin");

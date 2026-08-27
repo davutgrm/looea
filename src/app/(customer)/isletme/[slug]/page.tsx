@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { auth } from "@/auth";
 import { getBusinessBySlug } from "@/lib/data/business";
+import { isAvailableNowEffective } from "@/lib/business-availability";
 import { prisma } from "@/lib/prisma";
 import { DAY_LABELS, isOpenNow, sortedWeek } from "@/lib/business-hours";
 import { getDirectionsUrl } from "@/lib/maps/directions";
@@ -104,7 +105,7 @@ export default async function BusinessProfilePage({
               </Badge>
             )}
             {showPlanBadge && <Badge variant="accent">{planName}</Badge>}
-            {business.availableNow && <Badge variant="secondary">🟢 Şu an müsait</Badge>}
+            {isAvailableNowEffective(business) && <Badge variant="secondary">🟢 Şu an müsait</Badge>}
           </div>
 
           {categoryTags.length > 0 && (

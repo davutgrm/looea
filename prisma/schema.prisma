@@ -71,6 +71,20 @@ enum BusinessServes {
   UNISEX
 }
 
+enum PaymentMethod {
+  CASH
+  CARD
+  UNPAID
+}
+
+enum BlockReason {
+  LUNCH
+  TRAINING
+  LEAVE
+  EXTERNAL
+  CUSTOM
+}
+
 // ---------- Core identity ----------
 
 model User {
@@ -116,24 +130,27 @@ model Business {
   instagram     String?
   website       String?
 
-  verified     Boolean @default(false)
-  active       Boolean @default(true)
-  availableNow Boolean @default(false)
-  ratingAvg    Float   @default(0)
-  ratingCount  Int     @default(0)
+  verified          Boolean   @default(false)
+  active            Boolean   @default(true)
+  availableNow      Boolean   @default(false)
+  availableNowUntil DateTime?
+  ratingAvg         Float     @default(0)
+  ratingCount       Int       @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  location        BusinessLocation?
-  hours           BusinessHours[]
-  staff           BusinessStaff[]
-  services        Service[]
-  portfolioImages PortfolioImage[]
-  appointments    Appointment[]
-  reviews         Review[]
-  favorites       Favorite[]
-  subscription    Subscription?
+  location          BusinessLocation?
+  hours             BusinessHours[]
+  staff             BusinessStaff[]
+  services          Service[]
+  portfolioImages   PortfolioImage[]
+  appointments      Appointment[]
+  reviews           Review[]
+  favorites         Favorite[]
+  subscription      Subscription?
+  businessCustomers BusinessCustomer[]
+  blockedSlots      BlockedSlot[]
 
   @@index([type])
   @@index([active, verified])
@@ -184,8 +201,54 @@ model BusinessStaff {
   timeOff      StaffTimeOff[]
   services     ServiceStaff[]
   appointments Appointment[]
+  blockedSlots BlockedSlot[]
 
   @@index([businessId])
+}
+
+// A business-managed customer contact that does not require an app account —
+// covers both walk-ins ("geçici müşteri") and customers added directly from
+// the business panel. Real registered customers keep booking via User/Appointment.customerId.
+model BusinessCustomer {
+  id         String   @id @default(cuid())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  name  String?
+  phone String
+  email String?
+
+  createdAt DateTime @default(now())
+
+  appointments Appointment[]
+
+  @@unique([businessId, phone])
+  @@index([businessId])
+}
+
+// A time range closed to bookings (lunch break, training, day off, etc).
+// staffId null = blocks the whole business; repeatWeekly matches by dayOfWeek
+// indefinitely instead of the single stored date.
+model BlockedSlot {
+  id         String         @id @default(cuid())
+  businessId String
+  business   Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  staffId    String?
+  staff      BusinessStaff? @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  date         DateTime
+  dayOfWeek    Int
+  startTime    String // "HH:mm"
+  endTime      String // "HH:mm"
+  reason       BlockReason @default(CUSTOM)
+  label        String?
+  repeatWeekly Boolean     @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([businessId, date])
+  @@index([staffId, date])
+  @@index([businessId, dayOfWeek])
 }
 
 // dayOfWeek: 0 = Sunday ... 6 = Saturday
@@ -281,15 +344,17 @@ model PortfolioImage {
 // ---------- Booking ----------
 
 model Appointment {
-  id         String         @id @default(cuid())
-  businessId String
-  business   Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  customerId String
-  customer   User           @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  serviceId  String
-  service    Service        @relation(fields: [serviceId], references: [id])
-  staffId    String?
-  staff      BusinessStaff? @relation(fields: [staffId], references: [id])
+  id                 String            @id @default(cuid())
+  businessId         String
+  business           Business          @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  customerId         String?
+  customer           User?             @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  businessCustomerId String?
+  businessCustomer   BusinessCustomer? @relation(fields: [businessCustomerId], references: [id], onDelete: Cascade)
+  serviceId          String
+  service            Service           @relation(fields: [serviceId], references: [id])
+  staffId            String?
+  staff              BusinessStaff?    @relation(fields: [staffId], references: [id])
 
   date      DateTime // day of appointment (midnight UTC)
   startTime String // "HH:mm"
@@ -297,6 +362,12 @@ model Appointment {
   price     Float
   status    AppointmentStatus @default(PENDING)
   notes     String?
+
+  // Shared across the rows of one manually-created multi-service visit so
+  // status/payment actions can apply to the whole visit at once. Null for
+  // single-service appointments (including all customer-app bookings).
+  groupId       String?
+  paymentMethod PaymentMethod?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -306,6 +377,8 @@ model Appointment {
   @@index([businessId, date])
   @@index([staffId, date])
   @@index([customerId])
+  @@index([businessCustomerId])
+  @@index([groupId])
 }
 
 model Review {

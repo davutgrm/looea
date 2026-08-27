@@ -27,42 +27,55 @@ export type StaffAvailability = {
   slots: string[]; // "HH:mm" start times
 };
 
+/** Total duration and eligible staff (must be able to perform every selected
+ * service) for a set of services on the same visit. */
+async function resolveServiceSet(businessId: string, serviceIds: string[]) {
+  const services = await prisma.service.findMany({
+    where: { id: { in: serviceIds }, businessId },
+    include: { staff: { include: { staff: true } } },
+  });
+  if (services.length !== serviceIds.length) return null;
+
+  const duration = services.reduce((sum, s) => sum + s.durationMinutes, 0);
+
+  const staffMap = new Map<string, { id: string; name: string; active: boolean }>();
+  for (const service of services) {
+    for (const s of service.staff) staffMap.set(s.staff.id, s.staff);
+  }
+  const eligible = [...staffMap.values()].filter((staff) =>
+    services.every((service) => service.staff.some((s) => s.staffId === staff.id)),
+  );
+
+  return { duration, eligible };
+}
+
 export async function getAvailability(params: {
   businessId: string;
-  serviceId: string;
+  serviceIds: string[];
   date: Date;
   staffId?: string | null;
 }): Promise<StaffAvailability[]> {
-  const { businessId, serviceId, date, staffId } = params;
+  const { businessId, serviceIds, date, staffId } = params;
   const day = startOfDay(date);
   const dayOfWeek = day.getDay();
 
-  const [service, businessHours] = await Promise.all([
-    prisma.service.findUnique({
-      where: { id: serviceId },
-      include: {
-        staff: {
-          include: { staff: true },
-        },
-      },
-    }),
+  const [serviceSet, businessHours] = await Promise.all([
+    resolveServiceSet(businessId, serviceIds),
     prisma.businessHours.findUnique({
       where: { businessId_dayOfWeek: { businessId, dayOfWeek } },
     }),
   ]);
 
-  if (!service || service.businessId !== businessId) return [];
+  if (!serviceSet) return [];
   if (!businessHours || businessHours.isClosed || !businessHours.openTime || !businessHours.closeTime) {
     return [];
   }
 
   const businessOpen = timeToMinutes(businessHours.openTime);
   const businessClose = timeToMinutes(businessHours.closeTime);
-  const duration = service.durationMinutes;
+  const duration = serviceSet.duration;
 
-  const eligibleStaff = service.staff
-    .map((s) => s.staff)
-    .filter((s) => s.active && (!staffId || s.id === staffId));
+  const eligibleStaff = serviceSet.eligible.filter((s) => s.active && (!staffId || s.id === staffId));
 
   if (eligibleStaff.length === 0) return [];
 
@@ -73,7 +86,7 @@ export async function getAvailability(params: {
   const results: StaffAvailability[] = [];
 
   for (const staff of eligibleStaff) {
-    const [schedules, timeOff, appointments] = await Promise.all([
+    const [schedules, timeOff, appointments, blockedSlots] = await Promise.all([
       prisma.staffSchedule.findMany({ where: { staffId: staff.id, dayOfWeek } }),
       prisma.staffTimeOff.findMany({
         where: {
@@ -90,6 +103,16 @@ export async function getAvailability(params: {
         },
         select: { startTime: true, endTime: true },
       }),
+      prisma.blockedSlot.findMany({
+        where: {
+          businessId,
+          AND: [
+            { OR: [{ staffId: staff.id }, { staffId: null }] },
+            { OR: [{ repeatWeekly: true, dayOfWeek }, { repeatWeekly: false, date: day }] },
+          ],
+        },
+        select: { startTime: true, endTime: true },
+      }),
     ]);
 
     if (timeOff.length > 0 || schedules.length === 0) {
@@ -97,7 +120,7 @@ export async function getAvailability(params: {
       continue;
     }
 
-    const busyIntervals = appointments.map((a) => ({
+    const busyIntervals = [...appointments, ...blockedSlots].map((a) => ({
       start: timeToMinutes(a.startTime),
       end: timeToMinutes(a.endTime),
     }));

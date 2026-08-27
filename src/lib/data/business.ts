@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { haversineDistanceKm } from "@/lib/maps/distance";
 import { getAvailability } from "@/lib/availability";
+import { isAvailableNowEffective } from "@/lib/business-availability";
 import type { LatLng } from "@/lib/maps/types";
 import type { BusinessServes } from "@/generated/prisma/client";
 
@@ -40,6 +41,7 @@ function toCard(
     coverImageUrl: string | null;
     verified: boolean;
     availableNow: boolean;
+    availableNowUntil: Date | null;
     ratingAvg: number;
     ratingCount: number;
     createdAt: Date;
@@ -57,7 +59,7 @@ function toCard(
     logoUrl: business.logoUrl,
     coverImageUrl: business.coverImageUrl,
     verified: business.verified,
-    availableNow: business.availableNow,
+    availableNow: isAvailableNowEffective(business),
     ratingAvg: business.ratingAvg,
     ratingCount: business.ratingCount,
     createdAt: business.createdAt,
@@ -186,7 +188,7 @@ export async function getNextAvailableSlot(businessId: string): Promise<{ date: 
     date.setDate(date.getDate() + dayOffset);
     date.setHours(0, 0, 0, 0);
 
-    const availability = await getAvailability({ businessId, serviceId: cheapestService.id, date });
+    const availability = await getAvailability({ businessId, serviceIds: [cheapestService.id], date });
     const firstSlot = availability.flatMap((a) => a.slots).sort()[0];
     if (firstSlot) return { date, time: firstSlot };
   }

@@ -1,11 +1,15 @@
 "use server";
 
+import { randomUUID } from "crypto";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireBusiness } from "@/lib/auth-guard";
 import { notify } from "@/lib/notifications";
 import { getPaymentProvider } from "@/lib/payments/provider";
+import { getAvailability, mergeAnyStaffSlots } from "@/lib/availability";
+import { parseDateOnly } from "@/lib/date";
+import { normalizeTurkishPhone } from "@/lib/phone";
 
 export type ActionResult<T = undefined> =
   | { success: true; data: T }
@@ -59,25 +63,29 @@ export async function updateAppointmentStatus(
     return fail("Randevu bulunamadı");
   }
 
-  await prisma.appointment.update({
-    where: { id: appointmentId },
+  await prisma.appointment.updateMany({
+    where: appointment.groupId ? { groupId: appointment.groupId, businessId } : { id: appointmentId },
     data: { status: parsedStatus.data },
   });
 
-  if (parsedStatus.data === "CONFIRMED") {
-    await notify(
-      appointment.customerId,
-      "APPOINTMENT_CONFIRMED",
-      "Randevunuz onaylandı",
-      `${appointment.startTime} için randevunuz onaylandı.`,
-    );
-  } else if (parsedStatus.data === "CANCELLED") {
-    await notify(
-      appointment.customerId,
-      "APPOINTMENT_CANCELLED",
-      "Randevunuz iptal edildi",
-      `${appointment.startTime} için randevunuz işletme tarafından iptal edildi.`,
-    );
+  // Manually-created appointments may belong to a walk-in/business customer
+  // with no app account — nothing to notify in that case.
+  if (appointment.customerId) {
+    if (parsedStatus.data === "CONFIRMED") {
+      await notify(
+        appointment.customerId,
+        "APPOINTMENT_CONFIRMED",
+        "Randevunuz onaylandı",
+        `${appointment.startTime} için randevunuz onaylandı.`,
+      );
+    } else if (parsedStatus.data === "CANCELLED") {
+      await notify(
+        appointment.customerId,
+        "APPOINTMENT_CANCELLED",
+        "Randevunuz iptal edildi",
+        `${appointment.startTime} için randevunuz işletme tarafından iptal edildi.`,
+      );
+    }
   }
 
   revalidatePath("/business");
@@ -157,6 +165,165 @@ export async function toggleServiceActive(id: string, active: boolean): Promise<
   if (!service || service.businessId !== businessId) return fail("Hizmet bulunamadı");
   await prisma.service.update({ where: { id }, data: { active } });
   revalidatePath("/business/hizmetler");
+  return { success: true, data: undefined };
+}
+
+// ---------------------------------------------------------------------------
+// Business customers (walk-ins + manually-added contacts, no app account)
+// ---------------------------------------------------------------------------
+
+const businessCustomerSchema = z.object({
+  name: z.string().optional(),
+  phone: z.string().min(1, "Telefon gerekli"),
+  email: z.string().optional(),
+});
+
+/** Creates or updates (by phone) a business-owned customer contact. Used both
+ * by the "+ Müşteri Ekle" flow and the manual appointment wizard's "Geçici
+ * müşteri" quick-add — neither creates a login-capable User account. */
+export async function upsertBusinessCustomer(
+  input: unknown,
+): Promise<ActionResult<{ id: string; name: string | null; phone: string }>> {
+  const { businessId } = await requireBusiness();
+
+  const parsed = businessCustomerSchema.safeParse(input);
+  if (!parsed.success) return fail(firstIssue(parsed.error));
+
+  const phone = normalizeTurkishPhone(parsed.data.phone);
+  if (!phone) return fail("Geçerli bir telefon numarası girin (+90)");
+
+  const name = parsed.data.name?.trim() || null;
+  const email = parsed.data.email?.trim() || null;
+
+  const customer = await prisma.businessCustomer.upsert({
+    where: { businessId_phone: { businessId, phone } },
+    update: { ...(name ? { name } : {}), ...(email ? { email } : {}) },
+    create: { businessId, name, phone, email },
+  });
+
+  revalidatePath("/business/musteriler");
+  return { success: true, data: { id: customer.id, name: customer.name, phone: customer.phone } };
+}
+
+// ---------------------------------------------------------------------------
+// Manual appointments (business panel, walk-in / phone bookings)
+// ---------------------------------------------------------------------------
+
+function minutesToTime(minutes: number): string {
+  const h = Math.floor(minutes / 60)
+    .toString()
+    .padStart(2, "0");
+  const m = (minutes % 60).toString().padStart(2, "0");
+  return `${h}:${m}`;
+}
+
+const createManualAppointmentSchema = z
+  .object({
+    customerId: z.string().optional(),
+    businessCustomerId: z.string().optional(),
+    serviceIds: z.array(z.string()).min(1, "En az bir hizmet seçin"),
+    staffId: z.string().nullable(),
+    date: z.string().min(1, "Tarih gerekli"),
+    time: z.string().min(1, "Saat gerekli"),
+    notes: z.string().optional(),
+  })
+  .refine((v) => !!v.customerId !== !!v.businessCustomerId, { message: "Müşteri seçilmedi" });
+
+export async function createManualAppointment(
+  input: unknown,
+): Promise<ActionResult<{ appointmentIds: string[] }>> {
+  const { businessId } = await requireBusiness();
+
+  const parsed = createManualAppointmentSchema.safeParse(input);
+  if (!parsed.success) return fail(firstIssue(parsed.error));
+  const { customerId, businessCustomerId, serviceIds, staffId, date, time, notes } = parsed.data;
+
+  if (customerId) {
+    const customer = await prisma.user.findUnique({ where: { id: customerId } });
+    if (!customer) return fail("Müşteri bulunamadı");
+  } else if (businessCustomerId) {
+    const contact = await prisma.businessCustomer.findUnique({ where: { id: businessCustomerId } });
+    if (!contact || contact.businessId !== businessId) return fail("Müşteri bulunamadı");
+  }
+
+  const services = await prisma.service.findMany({
+    where: { id: { in: serviceIds }, businessId, active: true },
+  });
+  if (services.length !== serviceIds.length) return fail("Hizmetlerden biri bulunamadı");
+  const serviceMap = new Map(services.map((s) => [s.id, s]));
+  const orderedServices = serviceIds.map((id) => serviceMap.get(id)!);
+
+  const day = parseDateOnly(date);
+  const availability = await getAvailability({ businessId, serviceIds, date: day, staffId });
+
+  let resolvedStaffId: string | null = null;
+  if (staffId) {
+    const candidate = availability.find((a) => a.staffId === staffId && a.slots.includes(time));
+    resolvedStaffId = candidate ? staffId : null;
+  } else {
+    const merged = mergeAnyStaffSlots(availability);
+    resolvedStaffId = merged.find((m) => m.time === time)?.staffId ?? null;
+  }
+  if (!resolvedStaffId) return fail("Seçilen saat artık müsait değil, lütfen başka bir saat seçin");
+
+  const groupId = orderedServices.length > 1 ? randomUUID() : null;
+  const [h, m] = time.split(":").map(Number);
+  let cursor = h * 60 + m;
+
+  const rows = orderedServices.map((service) => {
+    const startTime = minutesToTime(cursor);
+    cursor += service.durationMinutes;
+    const endTime = minutesToTime(cursor);
+    return {
+      businessId,
+      customerId: customerId ?? null,
+      businessCustomerId: businessCustomerId ?? null,
+      serviceId: service.id,
+      staffId: resolvedStaffId,
+      date: day,
+      startTime,
+      endTime,
+      price: service.price,
+      status: "CONFIRMED" as const,
+      notes: notes || null,
+      groupId,
+    };
+  });
+
+  const created = await prisma.$transaction(rows.map((data) => prisma.appointment.create({ data })));
+
+  revalidatePath("/business");
+  revalidatePath("/business/randevular");
+  revalidatePath("/business/takvim");
+  revalidatePath("/business/musteriler");
+  return { success: true, data: { appointmentIds: created.map((a) => a.id) } };
+}
+
+// ---------------------------------------------------------------------------
+// Payment records (business's own bookkeeping — not a payment provider)
+// ---------------------------------------------------------------------------
+
+const paymentMethodEnum = z.enum(["CASH", "CARD", "UNPAID"]);
+
+export async function recordAppointmentPayment(
+  appointmentId: string,
+  paymentMethod: string,
+): Promise<ActionResult> {
+  const { businessId } = await requireBusiness();
+
+  const parsedMethod = paymentMethodEnum.safeParse(paymentMethod);
+  if (!parsedMethod.success) return fail("Geçersiz ödeme yöntemi");
+
+  const appointment = await prisma.appointment.findUnique({ where: { id: appointmentId } });
+  if (!appointment || appointment.businessId !== businessId) return fail("Randevu bulunamadı");
+
+  await prisma.appointment.updateMany({
+    where: appointment.groupId ? { groupId: appointment.groupId, businessId } : { id: appointmentId },
+    data: { paymentMethod: parsedMethod.data },
+  });
+
+  revalidatePath("/business/randevular");
+  revalidatePath("/business/takvim");
   return { success: true, data: undefined };
 }
 
@@ -312,6 +479,66 @@ export async function deleteStaffTimeOff(id: string): Promise<ActionResult> {
 }
 
 // ---------------------------------------------------------------------------
+// Blocked slots (time closed to bookings — lunch, training, leave, etc.)
+// ---------------------------------------------------------------------------
+
+const blockReasonEnum = z.enum(["LUNCH", "TRAINING", "LEAVE", "EXTERNAL", "CUSTOM"]);
+
+const blockedSlotSchema = z.object({
+  staffId: z.string().nullable(),
+  date: z.string().min(1, "Tarih gerekli"),
+  startTime: z.string().regex(timeRegex, "Geçersiz saat"),
+  endTime: z.string().regex(timeRegex, "Geçersiz saat"),
+  reason: blockReasonEnum,
+  label: z.string().optional(),
+  repeatWeekly: z.boolean().default(false),
+});
+
+export async function createBlockedSlot(input: unknown): Promise<ActionResult<{ id: string }>> {
+  const { businessId } = await requireBusiness();
+
+  const parsed = blockedSlotSchema.safeParse(input);
+  if (!parsed.success) return fail(firstIssue(parsed.error));
+  const { staffId, date, startTime, endTime, reason, label, repeatWeekly } = parsed.data;
+
+  if (startTime >= endTime) return fail("Bitiş saati başlangıç saatinden sonra olmalı");
+
+  if (staffId) {
+    const staff = await prisma.businessStaff.findUnique({ where: { id: staffId } });
+    if (!staff || staff.businessId !== businessId) return fail("Çalışan bulunamadı");
+  }
+
+  const day = parseDateOnly(date);
+  const created = await prisma.blockedSlot.create({
+    data: {
+      businessId,
+      staffId: staffId || null,
+      date: day,
+      dayOfWeek: day.getDay(),
+      startTime,
+      endTime,
+      reason,
+      label: label || null,
+      repeatWeekly,
+    },
+  });
+
+  revalidatePath("/business/takvim");
+  return { success: true, data: { id: created.id } };
+}
+
+export async function deleteBlockedSlot(id: string): Promise<ActionResult> {
+  const { businessId } = await requireBusiness();
+
+  const block = await prisma.blockedSlot.findUnique({ where: { id } });
+  if (!block || block.businessId !== businessId) return fail("Kayıt bulunamadı");
+
+  await prisma.blockedSlot.delete({ where: { id } });
+  revalidatePath("/business/takvim");
+  return { success: true, data: undefined };
+}
+
+// ---------------------------------------------------------------------------
 // Portfolio
 // ---------------------------------------------------------------------------
 
@@ -418,12 +645,26 @@ export async function changeSubscriptionPlan(
   return { success: true, data: { redirectUrl: result.url } };
 }
 
-export async function setAvailableNow(availableNow: boolean): Promise<ActionResult> {
+export async function setAvailableNow(
+  availableNow: boolean,
+  duration?: "1H" | "2H" | "EOD" | null,
+): Promise<ActionResult> {
   const { businessId } = await requireBusiness();
+
+  let availableNowUntil: Date | null = null;
+  if (availableNow) {
+    const now = new Date();
+    if (duration === "1H") availableNowUntil = new Date(now.getTime() + 60 * 60 * 1000);
+    else if (duration === "2H") availableNowUntil = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+    else if (duration === "EOD") {
+      availableNowUntil = new Date(now);
+      availableNowUntil.setHours(23, 59, 59, 999);
+    }
+  }
 
   const business = await prisma.business.update({
     where: { id: businessId },
-    data: { availableNow },
+    data: { availableNow, availableNowUntil },
     select: { slug: true },
   });
 

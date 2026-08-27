@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth-guard";
+import { appointmentCustomerName } from "@/lib/appointment-display";
 import { PageHeader } from "@/components/admin/page-header";
 import { StatCard } from "@/components/admin/stat-card";
 import { BarList } from "@/components/admin/bar-list";
@@ -63,6 +64,7 @@ export default async function AdminDashboardPage() {
       include: {
         business: { select: { name: true } },
         customer: { select: { name: true } },
+        businessCustomer: { select: { name: true } },
       },
     }),
     prisma.appointment.groupBy({ by: ["status"], _count: { _all: true } }),
@@ -165,7 +167,7 @@ export default async function AdminDashboardPage() {
               <div key={a.id} className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium">{a.business.name}</p>
-                  <p className="truncate text-xs text-muted-foreground">{a.customer.name}</p>
+                  <p className="truncate text-xs text-muted-foreground">{appointmentCustomerName(a)}</p>
                 </div>
                 <Badge variant="secondary" className="shrink-0">
                   {APPOINTMENT_STATUS_LABELS[a.status]}

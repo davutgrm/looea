@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
 import { BusinessGrid } from "@/components/customer/business-grid";
 import type { BusinessCard } from "@/lib/data/business";
+import { isAvailableNowEffective } from "@/lib/business-availability";
 
 export default async function FavoritesPage() {
   const user = await requireUser();
@@ -29,7 +30,7 @@ export default async function FavoritesPage() {
     logoUrl: f.business.logoUrl,
     coverImageUrl: f.business.coverImageUrl,
     verified: f.business.verified,
-    availableNow: f.business.availableNow,
+    availableNow: isAvailableNowEffective(f.business),
     ratingAvg: f.business.ratingAvg,
     ratingCount: f.business.ratingCount,
     createdAt: f.business.createdAt,

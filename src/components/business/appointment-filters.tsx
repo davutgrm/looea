@@ -6,11 +6,10 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const STATUS_TABS: { value: string; label: string }[] = [
-  { value: "ALL", label: "Tümü" },
-  { value: "CONFIRMED", label: "Onaylanan" },
-  { value: "COMPLETED", label: "Tamamlanan" },
-  { value: "PENDING", label: "Bekleyen" },
-  { value: "CANCELLED", label: "İptal Edilen" },
+  { value: "UPCOMING", label: "Yaklaşan" },
+  { value: "COMPLETED", label: "Tamamlandı" },
+  { value: "CANCELLED", label: "İptal" },
+  { value: "NO_SHOW", label: "Gelmedi" },
 ];
 
 export function AppointmentFilters() {
@@ -18,12 +17,12 @@ export function AppointmentFilters() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const status = searchParams.get("status") ?? "ALL";
+  const status = searchParams.get("status") ?? "UPCOMING";
   const date = searchParams.get("date") ?? "";
 
   function setParam(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
-    if (!value || value === "ALL") {
+    if (!value || (key === "status" && value === "UPCOMING")) {
       params.delete(key);
     } else {
       params.set(key, value);
@@ -56,7 +55,7 @@ export function AppointmentFilters() {
 
       <div className="flex flex-wrap items-center gap-2">
         <Input type="date" value={date} onChange={(e) => setParam("date", e.target.value)} className="w-44" />
-        {(status !== "ALL" || date) && (
+        {(status !== "UPCOMING" || date) && (
           <Button variant="ghost" size="sm" onClick={() => router.push(pathname)}>
             Filtreleri Temizle
           </Button>

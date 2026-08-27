@@ -4,6 +4,7 @@ import { tr } from "date-fns/locale";
 import { CalendarCheck, CalendarRange, Users, Wallet, ArrowUpRight, Sparkles, TrendingUp } from "lucide-react";
 import { requireBusiness } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
+import { appointmentCustomerName } from "@/lib/appointment-display";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -46,7 +47,7 @@ export default async function BusinessOverviewPage() {
   ] = await Promise.all([
     prisma.business.findUniqueOrThrow({
       where: { id: businessId },
-      select: { slug: true, description: true, phone: true, availableNow: true },
+      select: { slug: true, description: true, phone: true, availableNow: true, availableNowUntil: true },
     }),
     prisma.businessLocation.findUnique({ where: { businessId } }),
     prisma.businessHours.findMany({ where: { businessId } }),
@@ -61,8 +62,8 @@ export default async function BusinessOverviewPage() {
     }),
     prisma.appointment.findMany({
       where: { businessId },
-      select: { customerId: true },
-      distinct: ["customerId"],
+      select: { customerId: true, businessCustomerId: true },
+      distinct: ["customerId", "businessCustomerId"],
     }),
     prisma.appointment.aggregate({
       where: { businessId, status: "COMPLETED", date: { gte: monthStart, lte: monthEnd } },
@@ -78,6 +79,7 @@ export default async function BusinessOverviewPage() {
       take: 5,
       include: {
         customer: { select: { name: true } },
+        businessCustomer: { select: { name: true } },
         service: { select: { name: true } },
         staff: { select: { name: true } },
       },
@@ -90,6 +92,13 @@ export default async function BusinessOverviewPage() {
       take: 5,
     }),
   ]);
+
+  // "Şu an müsaitim" can be time-limited; self-heal the flag once it lapses
+  // instead of relying on a background job.
+  if (business.availableNow && business.availableNowUntil && business.availableNowUntil < now) {
+    await prisma.business.update({ where: { id: businessId }, data: { availableNow: false, availableNowUntil: null } });
+    business.availableNow = false;
+  }
 
   const serviceIds = popularServicesRaw.map((s) => s.serviceId);
   const services = await prisma.service.findMany({
@@ -182,11 +191,11 @@ export default async function BusinessOverviewPage() {
                   <div className="flex min-w-0 items-center gap-3">
                     <Avatar className="size-8 shrink-0">
                       <AvatarFallback className="bg-app-accent-soft text-app-accent-soft-foreground">
-                        {a.customer.name[0]?.toUpperCase()}
+                        {appointmentCustomerName(a)[0]?.toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex min-w-0 flex-col">
-                      <span className="truncate text-sm font-medium">{a.customer.name}</span>
+                      <span className="truncate text-sm font-medium">{appointmentCustomerName(a)}</span>
                       <span className="truncate text-xs text-muted-foreground">
                         {a.service.name}
                         {a.staff ? ` · ${a.staff.name}` : ""}

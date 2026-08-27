@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { APPOINTMENT_STATUS_LABELS } from "@/lib/business-types";
+import { appointmentCustomerName, appointmentCustomerPhone } from "@/lib/appointment-display";
 import type { AppointmentStatus, Prisma } from "@/generated/prisma/client";
 
 const PAGE_SIZE = 50;
@@ -50,7 +51,12 @@ export default async function AdminAppointmentsPage({
   if (bitis) dateFilter.lte = new Date(bitis);
   if (baslangic || bitis) where.date = dateFilter;
   if (isletme) where.business = { name: { contains: isletme } };
-  if (musteri) where.customer = { OR: [{ name: { contains: musteri } }, { email: { contains: musteri } }] };
+  if (musteri) {
+    where.OR = [
+      { customer: { OR: [{ name: { contains: musteri } }, { email: { contains: musteri } }] } },
+      { businessCustomer: { OR: [{ name: { contains: musteri } }, { phone: { contains: musteri } }] } },
+    ];
+  }
   if (durum) where.status = durum as AppointmentStatus;
 
   const [total, appointments] = await Promise.all([
@@ -62,7 +68,8 @@ export default async function AdminAppointmentsPage({
       take: PAGE_SIZE,
       include: {
         business: { select: { name: true } },
-        customer: { select: { name: true, email: true } },
+        customer: { select: { name: true, email: true, phone: true } },
+        businessCustomer: { select: { name: true, phone: true } },
         service: { select: { name: true } },
       },
     }),
@@ -103,8 +110,8 @@ export default async function AdminAppointmentsPage({
                 </TableCell>
                 <TableCell className="text-sm">{a.business.name}</TableCell>
                 <TableCell>
-                  <p className="text-sm">{a.customer.name}</p>
-                  <p className="text-xs text-muted-foreground">{a.customer.email}</p>
+                  <p className="text-sm">{appointmentCustomerName(a)}</p>
+                  <p className="text-xs text-muted-foreground">{a.customer?.email ?? appointmentCustomerPhone(a)}</p>
                 </TableCell>
                 <TableCell className="text-sm">{a.service.name}</TableCell>
                 <TableCell className="text-sm"><Price amount={a.price} /></TableCell>
