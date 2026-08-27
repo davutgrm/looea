@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { Home, MapPin, CalendarCheck, Heart, Settings, LogOut, ChevronsUpDown } from "lucide-react";
+import { Home, MapPin, CalendarCheck, Heart, MessageSquareText, Bell, Settings, LogOut, ChevronsUpDown } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,13 +20,17 @@ const NAV = [
   { href: "/ara", label: "Keşfet & Harita", icon: MapPin },
   { href: "/hesabim/randevularim", label: "Randevular", icon: CalendarCheck },
   { href: "/hesabim/favoriler", label: "Favoriler", icon: Heart },
+  { href: "/hesabim/yorumlarim", label: "Yorumlarım", icon: MessageSquareText },
+  { href: "/hesabim/bildirimler", label: "Bildirimler", icon: Bell },
   { href: "/hesabim", label: "Ayarlar", icon: Settings },
 ];
 
 export function AppSidebar({
   user,
+  unreadNotificationCount = 0,
 }: {
   user: { name?: string | null; image?: string | null } | null;
+  unreadNotificationCount?: number;
 }) {
   const pathname = usePathname();
 
@@ -58,7 +62,17 @@ export function AppSidebar({
               )}
             >
               <Icon className="size-5 shrink-0" />
-              {item.label}
+              <span className="flex-1">{item.label}</span>
+              {item.href === "/hesabim/bildirimler" && unreadNotificationCount > 0 && (
+                <span
+                  className={cn(
+                    "flex size-5 shrink-0 items-center justify-center rounded-full text-xs font-bold",
+                    active ? "bg-app-accent-foreground/20 text-app-accent-foreground" : "bg-app-accent text-app-accent-foreground",
+                  )}
+                >
+                  {unreadNotificationCount > 9 ? "9+" : unreadNotificationCount}
+                </span>
+              )}
             </Link>
           );
         })}

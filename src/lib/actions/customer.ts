@@ -262,3 +262,29 @@ export async function updateProfile(input: z.infer<typeof updateProfileSchema>):
   revalidatePath("/hesabim");
   return ok(undefined);
 }
+
+export async function markNotificationRead(notificationId: string): Promise<ActionResult> {
+  const session = await auth();
+  if (!session?.user) return err("Giriş yapmalısınız");
+
+  await prisma.notification.updateMany({
+    where: { id: notificationId, userId: session.user.id },
+    data: { read: true },
+  });
+
+  revalidatePath("/hesabim/bildirimler");
+  return ok(undefined);
+}
+
+export async function markAllNotificationsRead(): Promise<ActionResult> {
+  const session = await auth();
+  if (!session?.user) return err("Giriş yapmalısınız");
+
+  await prisma.notification.updateMany({
+    where: { userId: session.user.id, read: false },
+    data: { read: true },
+  });
+
+  revalidatePath("/hesabim/bildirimler");
+  return ok(undefined);
+}
