@@ -190,7 +190,7 @@ export function SearchView({
             <SelectItem value="any">Tüm fiyatlar</SelectItem>
             {PRICE_OPTIONS.map((p) => (
               <SelectItem key={p} value={String(p)}>
-                {p}₺&apos;ye kadar
+                {p}<span className="font-sans">₺</span>&apos;ye kadar
               </SelectItem>
             ))}
           </SelectContent>
