@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { proHref } from "@/lib/domains";
 
 const CITY_LINKS = [
   { label: "Kuaför İstanbul", href: "/kuafor/istanbul" },
@@ -33,9 +34,9 @@ export function SiteFooter() {
           </div>
           <div className="space-y-3 text-sm">
             <p className="font-semibold text-white/90">İşletmeler</p>
+            <a href={proHref("/")} className="block text-white/50 hover:text-white">Kuafi Pro</a>
             <Link href="/isletme-kaydet" className="block text-white/50 hover:text-white">İşletmeni Kaydet</Link>
             <Link href="/giris" className="block text-white/50 hover:text-white">İşletme Girişi</Link>
-            <Link href="/#uyelik" className="block text-white/50 hover:text-white">Üyelik</Link>
             <Link href="/#karsilastirma" className="block text-white/50 hover:text-white">Neden Kuafi?</Link>
           </div>
           <div className="space-y-3 text-sm">

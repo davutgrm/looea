@@ -24,8 +24,7 @@ import { getCategoriesGrouped, GROUP_LABELS } from "@/lib/data/categories";
 import { SectionLabel, SectionNumeral } from "@/components/marketing/section-label";
 import { ShowcaseCard } from "@/components/marketing/showcase-card";
 import { HeroSearch } from "@/components/marketing/hero-search";
-import { Badge } from "@/components/ui/badge";
-import { Price } from "@/components/business/price";
+import { proHref } from "@/lib/domains";
 
 const GROUP_ICONS: Record<string, typeof Scissors> = {
   SAC: Scissors,
@@ -66,7 +65,6 @@ export default async function LandingPage() {
 
   const avgRating = reviewAgg._avg.rating ?? 0;
   const reviewCount = reviewAgg._count._all;
-  const proPhoto = featuredBusinesses[2]?.coverImageUrl ?? featuredBusinesses[0]?.coverImageUrl;
   const showcaseBusiness =
     featuredBusinesses.find((b) => b.type !== "NAIL_SALON") ?? featuredBusinesses[0];
 
@@ -240,112 +238,10 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* 04 / Kuaförler için */}
-      <section id="kuaforler-icin" className="relative overflow-hidden bg-gradient-to-b from-violet-950 via-violet-950 to-black py-24 text-white">
-        <SectionNumeral n="04" className="right-4 text-white/[0.04] md:right-10" />
-        <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 md:grid-cols-2">
-          <div>
-            <SectionLabel index="04" label="Kuaförler İçin" className="text-violet-300" />
-            <h2 className="font-grotesk mt-4 text-4xl font-bold tracking-tight text-balance">
-              İşini büyüt,{" "}
-              <span className="font-instrument text-[0.88em] text-violet-300 italic">takvimini doldur</span>.
-            </h2>
-            <p className="mt-4 max-w-md text-white/60">
-              Profilini oluştur, hizmetlerini ve çalışanlarını yönet, müsaitliğini otomatik
-              takvime bağla — Kuafi yeni müşterileri sana getirsin.
-            </p>
-            <ul className="mt-8 space-y-3">
-              {[
-                "İlk ay ücretsiz, komisyon yok",
-                "Gerçek zamanlı takvim ve personel yönetimi",
-                "Doğrulanmış müşteri yorumları ile güven kazan",
-              ].map((item) => (
-                <li key={item} className="flex items-start gap-2.5 text-sm text-white/80">
-                  <Check className="mt-0.5 size-4 shrink-0 text-violet-400" />
-                  {item}
-                </li>
-              ))}
-            </ul>
-            <Link
-              href="/isletme-kaydet"
-              className="mt-8 inline-block rounded-full bg-white px-6 py-3 text-sm font-semibold text-black transition-colors hover:bg-white/90"
-            >
-              İşletmeni Ücretsiz Kaydet
-            </Link>
-          </div>
-
-          <div className="relative aspect-[4/5] w-full max-w-sm overflow-hidden rounded-[28px] md:justify-self-end">
-            {proPhoto && (
-              <Image
-                src={proPhoto}
-                alt="Kuaförler için Kuafi"
-                fill
-                sizes="(max-width: 768px) 90vw, 400px"
-                className="object-cover"
-              />
-            )}
-            <div className="absolute inset-0 bg-gradient-to-t from-violet-950/60 via-transparent to-transparent" />
-          </div>
-        </div>
-      </section>
-
-      {/* 05 / Üyelik */}
-      <section id="uyelik" className="border-t border-black/5 py-24 dark:border-white/10">
+      {/* 04 / Karşılaştırma */}
+      <section id="karsilastirma" className="border-t border-black/5 py-24 dark:border-white/10">
         <div className="mx-auto max-w-4xl px-4">
-          <SectionLabel index="05" label="Üyelik" align="center" />
-          <h2 className="font-grotesk mx-auto mt-4 max-w-2xl text-center text-4xl font-bold tracking-tight text-balance">
-            Tek plan,{" "}
-            <span className="font-instrument text-[0.88em] text-violet-600 italic">gizli ücret yok</span>.
-          </h2>
-
-          <div className="relative mx-auto mt-14 max-w-sm overflow-hidden rounded-[28px] border border-violet-600/20 bg-card p-8 text-center shadow-[0_1px_2px_rgba(0,0,0,0.04),0_32px_60px_-24px_rgba(0,0,0,0.25)]">
-            <Badge variant="accent" className="mx-auto">Popüler</Badge>
-            <h3 className="font-grotesk mt-4 text-2xl font-bold">Kuafi Pro</h3>
-            <p className="mt-1.5 text-sm text-muted-foreground">
-              Randevularını yönet, yeni müşteri kazan.
-            </p>
-
-            <div className="mt-6 flex items-baseline justify-center gap-1.5">
-              <span className="font-grotesk text-5xl font-bold tracking-tight">
-                <Price amount={499} />
-              </span>
-              <span className="text-muted-foreground">/ ay</span>
-            </div>
-            <p className="mt-2 text-xs text-muted-foreground">
-              Ayda tek yeni müşteri getirse kendini karşılar.
-            </p>
-
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link
-                href="/isletme-kaydet"
-                className="inline-flex flex-1 items-center justify-center rounded-full bg-violet-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-violet-700"
-              >
-                Hemen Başla
-              </Link>
-              <a
-                href="mailto:destek@kuafi.app"
-                className="inline-flex flex-1 items-center justify-center rounded-full border border-black/10 px-6 py-3 text-sm font-semibold transition-colors hover:bg-secondary dark:border-white/15"
-              >
-                Bize Ulaşın
-              </a>
-            </div>
-
-            <ul className="mt-8 space-y-2.5 text-left">
-              {["Sınırsız randevu", "Komisyon yok", "Taahhüt yok", "İlk ay ücretsiz"].map((item) => (
-                <li key={item} className="flex items-start gap-2.5 text-sm">
-                  <Check className="mt-0.5 size-4 shrink-0 text-violet-600" />
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      {/* 06 / Karşılaştırma */}
-      <section id="karsilastirma" className="py-24">
-        <div className="mx-auto max-w-4xl px-4">
-          <SectionLabel index="06" label="Karşılaştırma" align="center" />
+          <SectionLabel index="04" label="Karşılaştırma" align="center" />
           <h2 className="font-grotesk mx-auto mt-4 max-w-2xl text-center text-4xl font-bold tracking-tight text-balance">
             Diğerleri defterle çalışır.{" "}
             <span className="font-instrument text-[0.88em] text-violet-600 italic">Kuafi&apos;de saniyede randevu.</span>
@@ -382,10 +278,10 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* 07 / SSS */}
+      {/* 05 / SSS */}
       <section id="sss" className="border-t border-black/5 bg-secondary/30 py-24 dark:border-white/10">
         <div className="mx-auto max-w-3xl px-4">
-          <SectionLabel index="07" label="SSS" align="center" />
+          <SectionLabel index="05" label="SSS" align="center" />
           <h2 className="font-grotesk mx-auto mt-4 max-w-2xl text-center text-4xl font-bold tracking-tight text-balance">
             Sıkça sorulan{" "}
             <span className="font-instrument text-[0.88em] text-violet-600 italic">sorular</span>.
@@ -403,6 +299,26 @@ export default async function LandingPage() {
               </AccordionItem>
             ))}
           </Accordion>
+        </div>
+      </section>
+
+      {/* İşletme bandı — müşteri landing'inde küçük bir geçiş, tam pitch pro tarafında */}
+      <section className="border-t border-black/5 py-14 dark:border-white/10">
+        <div className="mx-auto max-w-4xl px-4">
+          <div className="flex flex-col items-center gap-4 rounded-[24px] border border-black/5 bg-secondary/40 px-6 py-8 text-center sm:flex-row sm:justify-between sm:text-left dark:border-white/10">
+            <div>
+              <h2 className="font-grotesk text-lg font-bold">İşletme misin?</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Kuafi Pro ile takvimini doldur, yeni müşteriler kazan — ilk ay ücretsiz.
+              </p>
+            </div>
+            <a
+              href={proHref("/")}
+              className="inline-flex shrink-0 items-center justify-center rounded-full bg-violet-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-violet-700"
+            >
+              İşletme tarafına geç →
+            </a>
+          </div>
         </div>
       </section>
 
