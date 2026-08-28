@@ -1,8 +1,13 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { RegisterCustomerForm } from "@/components/auth/register-customer-form";
+import { isProRequest } from "@/lib/host";
 
-export default function RegisterPage() {
+export default async function RegisterPage() {
+  // Pro host'ta müşteri kaydı yok — işletme kaydına yönlendir.
+  if (await isProRequest()) redirect("/isletme-kaydet");
+
   return (
     <AuthShell
       title="Yakınındaki en iyi kuaförü bul."

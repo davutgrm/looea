@@ -49,8 +49,10 @@ export function proBaseUrl(): string {
 export function proHref(path = "/"): string {
   const base = proBaseUrl();
   if (base) return `${base}${path}`;
-  // Dev / env yok: pro dünyası aynı origin altında `/pro` ile başlar.
-  return path === "/" ? "/pro" : `/pro${path}`;
+  // Dev / env yok: SADECE pro landing'i `/pro`'da yaşar; diğer rotalar (/giris,
+  // /isletme-kaydet, /business …) tüm host'larda üst seviyede paylaşılır, o yüzden
+  // aynı origin'de relatif path'e düşerler.
+  return path === "/" ? "/pro" : path;
 }
 
 /**
