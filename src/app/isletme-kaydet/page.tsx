@@ -1,19 +1,12 @@
-import Link from "next/link";
-import { AuthShell } from "@/components/auth/auth-shell";
-import { RegisterBusinessForm } from "@/components/auth/register-business-form";
+import type { Metadata } from "next";
+import { ProOnboarding } from "@/components/pro-onboarding/pro-onboarding";
+
+export const metadata: Metadata = {
+  title: "İşletmeni Kaydet — Kuafi Pro",
+  description:
+    "Kuaför, berber ve güzellik salonun için Kuafi Pro hesabını birkaç adımda oluştur. İlk ay ücretsiz.",
+};
 
 export default function RegisterBusinessPage() {
-  return (
-    <AuthShell
-      title="İşini büyüt, takvimini doldur."
-      subtitle="İlk ay ücretsiz — taahhüt yok."
-      footer={
-        <>
-          Zaten hesabın var mı? <Link href="/giris" className="font-medium text-app-accent hover:underline">Giriş Yap</Link>
-        </>
-      }
-    >
-      <RegisterBusinessForm />
-    </AuthShell>
-  );
+  return <ProOnboarding />;
 }

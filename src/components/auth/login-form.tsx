@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn, getSession } from "next-auth/react";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -51,7 +51,12 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
         />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="password">Şifre</Label>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="password">Şifre</Label>
+          <Link href="/sifremi-unuttum" className="text-xs font-medium text-app-accent hover:underline">
+            Şifremi unuttum?
+          </Link>
+        </div>
         <Input
           id="password"
           type="password"
@@ -61,10 +66,14 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
           className="focus-visible:border-app-accent focus-visible:ring-app-accent/50"
         />
       </div>
-      <Button type="submit" variant="accent" className="w-full" disabled={isPending}>
+      <button
+        type="submit"
+        disabled={isPending}
+        className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-black px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-black/90 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-white/90"
+      >
         {isPending && <Loader2 className="size-4 animate-spin" />}
         Giriş Yap
-      </Button>
+      </button>
     </form>
   );
 }

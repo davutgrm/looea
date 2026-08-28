@@ -130,6 +130,7 @@ model Business {
   instagram     String?
   website       String?
 
+  referralSource    String?
   verified          Boolean   @default(false)
   active            Boolean   @default(true)
   availableNow      Boolean   @default(false)

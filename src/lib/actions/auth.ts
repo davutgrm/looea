@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/slug";
+import { SERVES_FOR_TYPE } from "@/lib/business-types";
 
 const registerCustomerSchema = z.object({
   name: z.string().min(2, "İsim en az 2 karakter olmalı"),
@@ -13,6 +14,29 @@ const registerCustomerSchema = z.object({
 });
 
 export type ActionResult = { success: true } | { success: false; error: string };
+
+const forgotPasswordSchema = z.object({
+  email: z.string().email("Geçerli bir email girin"),
+});
+
+/**
+ * Şifre sıfırlama talebi. E-posta gönderimi henüz canlı değil (ödeme sağlayıcısı
+ * gibi stub) — hesabın var olup olmadığını sızdırmamak için her durumda nötr
+ * başarı döner. SMTP bağlandığında burada token üretilip sıfırlama linki
+ * gönderilecek.
+ */
+export async function requestPasswordReset(input: unknown): Promise<ActionResult> {
+  const parsed = forgotPasswordSchema.safeParse(input);
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0]?.message ?? "Geçersiz email" };
+  }
+  const user = await prisma.user.findUnique({ where: { email: parsed.data.email } });
+  if (user && process.env.NODE_ENV !== "production") {
+    // TODO(email): SMTP bağlanınca gerçek sıfırlama linki gönder.
+    console.info(`[şifre sıfırlama] ${parsed.data.email} için talep alındı (stub).`);
+  }
+  return { success: true };
+}
 
 export async function registerCustomer(input: unknown): Promise<ActionResult> {
   const parsed = registerCustomerSchema.safeParse(input);
@@ -44,15 +68,19 @@ const businessTypeEnum = z.enum([
   "OTHER",
 ]);
 
-const businessServesEnum = z.enum(["MEN", "WOMEN", "UNISEX"]);
-
 const registerBusinessSchema = z.object({
   ownerName: z.string().min(2, "İsim en az 2 karakter olmalı"),
+  ownerPhone: z.string().optional(),
   email: z.string().email("Geçerli bir email girin"),
   password: z.string().min(6, "Şifre en az 6 karakter olmalı"),
   businessName: z.string().min(2, "İşletme adı en az 2 karakter olmalı"),
   businessType: businessTypeEnum,
-  serves: businessServesEnum,
+  city: z.string().min(2, "Şehir seçin"),
+  district: z.string().min(1, "İlçe seçin"),
+  address: z.string().min(5, "Adres en az 5 karakter olmalı"),
+  latitude: z.number(),
+  longitude: z.number(),
+  referralSource: z.string().optional(),
 });
 
 export async function registerBusiness(input: unknown): Promise<ActionResult> {
@@ -60,7 +88,23 @@ export async function registerBusiness(input: unknown): Promise<ActionResult> {
   if (!parsed.success) {
     return { success: false, error: parsed.error.issues[0]?.message ?? "Geçersiz form" };
   }
-  const { ownerName, email, password, businessName, businessType, serves } = parsed.data;
+  const {
+    ownerName,
+    ownerPhone,
+    email,
+    password,
+    businessName,
+    businessType,
+    city,
+    district,
+    address,
+    latitude,
+    longitude,
+    referralSource,
+  } = parsed.data;
+
+  // "Kime hizmet veriyorsunuz?" ayrı sorulmuyor — türden tutarlı biçimde türetilir.
+  const serves = SERVES_FOR_TYPE[businessType];
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
@@ -87,6 +131,7 @@ export async function registerBusiness(input: unknown): Promise<ActionResult> {
     data: {
       name: ownerName,
       email,
+      phone: ownerPhone,
       passwordHash,
       role: "BUSINESS_OWNER",
       business: {
@@ -95,6 +140,10 @@ export async function registerBusiness(input: unknown): Promise<ActionResult> {
           slug,
           type: businessType,
           serves,
+          referralSource,
+          location: {
+            create: { address, city, district, latitude, longitude },
+          },
           hours: {
             create: Array.from({ length: 7 }, (_, dayOfWeek) => ({
               dayOfWeek,
