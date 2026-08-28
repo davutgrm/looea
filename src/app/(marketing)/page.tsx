@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import {
   Search,
   CalendarCheck,
@@ -10,7 +9,7 @@ import {
   Gem,
   Check,
   X,
-  Smartphone,
+  ArrowRight,
 } from "lucide-react";
 import {
   Accordion,
@@ -21,9 +20,11 @@ import {
 import { prisma } from "@/lib/prisma";
 import { getFeaturedBusinesses } from "@/lib/data/business";
 import { getCategoriesGrouped, GROUP_LABELS } from "@/lib/data/categories";
-import { SectionLabel, SectionNumeral } from "@/components/marketing/section-label";
 import { ShowcaseCard } from "@/components/marketing/showcase-card";
 import { HeroSearch } from "@/components/marketing/hero-search";
+import { SalonCardMock, SlotPickerMock } from "@/components/marketing/product-mockups";
+import { Reveal } from "@/components/ui/reveal";
+import { type, layout, btn } from "@/lib/design-tokens";
 import { proHref } from "@/lib/domains";
 
 const GROUP_ICONS: Record<string, typeof Scissors> = {
@@ -42,6 +43,28 @@ const COMPARISON_ROWS = [
   "Randevu geçmişi ve favoriler",
 ];
 
+const HOW_STEPS = [
+  { n: "01", icon: Search, title: "Keşfet", desc: "Yakınındaki kuaför, berber ve güzellik salonlarını gör; çalışmalarını ve yorumları incele." },
+  { n: "02", icon: ShieldCheck, title: "Karşılaştır", desc: "Şeffaf fiyat listesi ve doğrulanmış yorumlarla sana en uygun salonu seç." },
+  { n: "03", icon: CalendarCheck, title: "Randevu al", desc: "Müsait saati seç, saniyeler içinde randevunu oluştur; hatırlatmalarla asla unutma." },
+];
+
+const FAQ = [
+  { q: "Kuafi kullanmak ücretsiz mi?", a: "Müşteriler için Kuafi tamamen ücretsizdir. İşletmeler için tek bir Kuafi Pro planı vardır, ilk ay ücretsizdir." },
+  { q: "Randevumu nasıl iptal ederim?", a: "Randevularım sayfasından ilgili randevuyu seçip iptal edebilirsin." },
+  { q: "Yorumlar gerçek mi?", a: "Evet. Sadece o işletmeden gerçekten randevu almış ve hizmeti tamamlamış müşteriler yorum yapabilir." },
+  { q: "İşletmemi nasıl kaydederim?", a: "İşletmen için Kuafi Pro tarafından birkaç adımda profilini oluşturabilirsin." },
+];
+
+function Eyebrow({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center gap-2 text-xs font-semibold tracking-[0.18em] text-app-accent uppercase">
+      <span className="h-px w-6 bg-app-accent/50" />
+      {children}
+    </span>
+  );
+}
+
 export default async function LandingPage() {
   const [featuredBusinesses, businessCount, reviews, reviewAgg, categoriesGrouped] = await Promise.all([
     getFeaturedBusinesses(null, 8),
@@ -55,244 +78,332 @@ export default async function LandingPage() {
       orderBy: { createdAt: "desc" },
       take: 6,
     }),
-    prisma.review.aggregate({
-      where: { hidden: false },
-      _avg: { rating: true },
-      _count: { _all: true },
-    }),
+    prisma.review.aggregate({ where: { hidden: false }, _avg: { rating: true }, _count: { _all: true } }),
     getCategoriesGrouped(),
   ]);
 
   const avgRating = reviewAgg._avg.rating ?? 0;
   const reviewCount = reviewAgg._count._all;
-  const showcaseBusiness =
-    featuredBusinesses.find((b) => b.type !== "NAIL_SALON") ?? featuredBusinesses[0];
+  const catGroups = Object.entries(categoriesGrouped);
 
   return (
     <div className="overflow-x-clip">
-      {/* Hero */}
+      {/* ── Hero: asimetrik, ürün önde ── */}
       <section className="relative">
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[640px] bg-[radial-gradient(ellipse_55%_50%_at_50%_0%,rgba(162,28,219,0.14),transparent_70%)]"
+          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[560px] bg-[radial-gradient(70%_60%_at_15%_0%,rgba(162,28,219,0.10),transparent_70%)]"
         />
-        <div className="mx-auto max-w-2xl px-4 pt-16 pb-20 text-center md:pt-24 md:pb-28">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold text-violet-700 dark:bg-violet-500/15 dark:text-violet-300">
-            <Sparkles className="size-3.5" /> Türkiye&apos;nin randevu platformu
-          </span>
-          <h1 className="font-grotesk mx-auto mt-6 max-w-xl text-5xl leading-[1.08] font-bold tracking-tight text-balance md:text-6xl">
-            <span className="block">Yakınındaki</span>
-            <span className="mt-1 block">
-              <span className="font-instrument text-[0.88em] text-violet-600 italic">en iyi kuaförü</span> bul.
-            </span>
-          </h1>
-          <p className="mx-auto mt-5 max-w-md text-lg text-muted-foreground text-pretty">
-            Instagram DM&apos;i ve telefon trafiğini bırak. Çalışmaları gör, fiyatları
-            karşılaştır, randevunu saniyeler içinde oluştur.
-          </p>
-
-          <div className="mt-9">
-            <HeroSearch />
-          </div>
-
-          <div className="mt-12 flex justify-center gap-10 text-sm">
-            <div>
-              <div className="font-grotesk text-2xl font-bold">{businessCount}+</div>
-              <div className="text-muted-foreground">Kayıtlı işletme</div>
-            </div>
-            <div>
-              <div className="font-grotesk text-2xl font-bold">
-                {avgRating > 0 ? avgRating.toFixed(1).replace(".", ",") : "—"}
-              </div>
-              <div className="text-muted-foreground">{reviewCount}+ yorum</div>
-            </div>
-            <div>
-              <div className="font-grotesk text-2xl font-bold">7/24</div>
-              <div className="text-muted-foreground">Online randevu</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 01 / Topluluk & yorumlar */}
-      <section id="topluluk" className="relative overflow-hidden border-t border-black/5 py-24 dark:border-white/10">
-        <SectionNumeral n="01" className="left-1/2 -translate-x-1/2" />
-        <div className="relative mx-auto max-w-6xl px-4">
-          <SectionLabel index="01" label="Topluluk" align="center" />
-          <h2 className="font-grotesk mx-auto mt-4 max-w-2xl text-center text-4xl font-bold tracking-tight text-balance">
-            Binlerce müşterinin{" "}
-            <span className="font-instrument text-[0.88em] text-violet-600 italic">güvendiği</span> bir
-            topluluk.
-          </h2>
-          {reviewCount > 0 && (
-            <p className="mt-4 flex items-center justify-center gap-1.5 text-sm font-medium text-muted-foreground">
-              <Star className="size-4 fill-violet-600 text-violet-600" />
-              {avgRating.toFixed(1).replace(".", ",")} · {reviewCount}+ yorum
+        <div className={`${layout.container} grid items-center gap-12 py-16 md:grid-cols-[1.05fr_0.95fr] md:py-24`}>
+          <div>
+            <Eyebrow>Türkiye&apos;nin randevu platformu</Eyebrow>
+            <h1 className={`${type.display} mt-5`}>
+              Yakınındaki{" "}
+              <span className="font-instrument text-[0.9em] font-normal text-app-accent italic">
+                en iyi kuaförü
+              </span>{" "}
+              bul.
+            </h1>
+            <p className={`${type.bodyLg} mt-5 max-w-md`}>
+              Instagram DM&apos;i ve telefon trafiğini bırak. Çalışmaları gör, fiyatları
+              karşılaştır, randevunu saniyeler içinde oluştur.
             </p>
-          )}
 
-          {reviews.length > 0 && (
-            <div className="mt-14 grid gap-5 md:grid-cols-3">
-              {reviews.map((r) => (
-                <div key={r.id} className="rounded-[22px] border border-black/5 bg-card p-6 shadow-sm dark:border-white/10">
-                  <div className="flex gap-0.5">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`size-4 ${i < r.rating ? "fill-violet-600 text-violet-600" : "text-muted"}`}
-                      />
-                    ))}
-                  </div>
-                  <p className="mt-3 text-sm text-foreground/80">&ldquo;{r.comment}&rdquo;</p>
-                  <div className="mt-5 flex items-center gap-2.5">
-                    <div className="font-grotesk flex size-9 items-center justify-center rounded-full bg-violet-100 text-sm font-bold text-violet-700 dark:bg-violet-500/15 dark:text-violet-300">
-                      {r.customer.name.charAt(0)}
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">{r.customer.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {r.business.name}
-                        {r.business.location?.city ? `, ${r.business.location.city}` : ""}
-                      </p>
-                    </div>
-                  </div>
+            <div className="mt-8 max-w-xl">
+              <HeroSearch />
+            </div>
+
+            <dl className="mt-10 flex gap-8">
+              {[
+                [`${businessCount}+`, "Kayıtlı işletme"],
+                [avgRating > 0 ? avgRating.toFixed(1).replace(".", ",") : "—", `${reviewCount}+ yorum`],
+                ["7/24", "Online randevu"],
+              ].map(([v, l]) => (
+                <div key={l}>
+                  <dt className="font-grotesk text-2xl font-bold tracking-tight">{v}</dt>
+                  <dd className="text-sm text-muted-foreground">{l}</dd>
                 </div>
               ))}
+            </dl>
+          </div>
+
+          {/* Ürün mockup kümesi — fotoğrafsız UI */}
+          <div className="relative mx-auto hidden h-[420px] w-full max-w-md md:block" aria-hidden>
+            <div className="absolute top-2 left-2 rotate-[-4deg]">
+              <SalonCardMock />
             </div>
-          )}
-
-          {featuredBusinesses.length > 0 && (
-            <div className="mt-14 -mx-4 flex snap-x gap-5 overflow-x-auto px-4 pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {featuredBusinesses.map((b) => (
-                <div key={b.id} className="w-64 shrink-0 snap-start">
-                  <ShowcaseCard business={b} />
-                </div>
-              ))}
+            <div className="absolute right-2 bottom-2 rotate-[3deg]">
+              <SlotPickerMock />
             </div>
-          )}
-        </div>
-      </section>
-
-      {/* 02 / Hizmetler */}
-      <section id="hizmetler" className="border-t border-black/5 bg-secondary/30 py-24 dark:border-white/10">
-        <div className="mx-auto max-w-6xl px-4">
-          <SectionLabel index="02" label="Hizmetler" align="center" />
-          <h2 className="font-grotesk mx-auto mt-4 max-w-2xl text-center text-4xl font-bold tracking-tight text-balance">
-            Saçından tırnağına,{" "}
-            <span className="font-instrument text-[0.88em] text-violet-600 italic">tek adreste</span>.
-          </h2>
-
-          <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {Object.entries(categoriesGrouped).map(([group, categories]) => {
-              const Icon = GROUP_ICONS[group] ?? Sparkles;
-              return (
-                <Link
-                  key={group}
-                  href={`/ara?kategori=${categories[0]?.slug ?? ""}`}
-                  className="group rounded-[22px] border border-black/5 bg-card p-6 shadow-sm transition-shadow hover:shadow-md dark:border-white/10"
-                >
-                  <div className="flex size-11 items-center justify-center rounded-full bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300">
-                    <Icon className="size-5" />
-                  </div>
-                  <h3 className="font-grotesk mt-4 font-bold">{GROUP_LABELS[group] ?? group}</h3>
-                  <p className="mt-1.5 line-clamp-2 text-sm text-muted-foreground">
-                    {categories.map((c) => c.name).join(", ")}
-                  </p>
-                  <span className="mt-4 inline-block text-sm font-semibold text-violet-600 group-hover:underline">
-                    Keşfet →
-                  </span>
-                </Link>
-              );
-            })}
           </div>
         </div>
       </section>
 
-      {/* 03 / Nasıl çalışır */}
-      <section id="nasil-calisir" className="relative py-24">
-        <div className="mx-auto max-w-6xl px-4">
-          <SectionLabel index="03" label="Nasıl Çalışır" align="center" />
-          <h2 className="font-grotesk mx-auto mt-4 max-w-2xl text-center text-4xl font-bold tracking-tight text-balance">
-            Üç adımda{" "}
-            <span className="font-instrument text-[0.88em] text-violet-600 italic">randevu senin</span>.
-          </h2>
+      {/* ── Güven şeridi ── */}
+      <section className="border-y border-border bg-secondary/40">
+        <div className={`${layout.container} flex flex-wrap items-center justify-center gap-x-10 gap-y-3 py-5 text-sm`}>
+          <span className="flex items-center gap-2 font-medium">
+            <Star className="size-4 fill-app-accent text-app-accent" />
+            {avgRating > 0 ? `${avgRating.toFixed(1).replace(".", ",")} ortalama puan` : "Doğrulanmış yorumlar"}
+          </span>
+          <span className="flex items-center gap-2 text-muted-foreground">
+            <ShieldCheck className="size-4 text-app-accent" /> Sadece gerçek müşteri yorumları
+          </span>
+          <span className="flex items-center gap-2 text-muted-foreground">
+            <CalendarCheck className="size-4 text-app-accent" /> Anında onaylı randevu
+          </span>
+        </div>
+      </section>
 
-          <div className="mt-16 grid gap-10 md:grid-cols-3">
+      {/* ── Segment: erkek / kadın iki panel ── */}
+      <section className={layout.sectionY}>
+        <div className={layout.container}>
+          <Reveal>
+            <Eyebrow>Sana özel</Eyebrow>
+            <h2 className={`${type.h1} mt-4 max-w-2xl`}>
+              Erkek ya da kadın,{" "}
+              <span className="font-instrument text-[0.9em] font-normal text-app-accent italic">
+                doğru yerdesin
+              </span>
+              .
+            </h2>
+          </Reveal>
+          <div className="mt-10 grid gap-5 md:grid-cols-2">
             {[
-              { n: "01", icon: Search, title: "Keşfet", desc: "Yakınındaki kuaförleri, berberleri ve güzellik salonlarını keşfet, çalışmalarını ve yorumları incele." },
-              { n: "02", icon: ShieldCheck, title: "Karşılaştır", desc: "Gerçek yorumlar, doğrulanmış profiller ve şeffaf fiyatlarla güvenle seç." },
-              { n: "03", icon: CalendarCheck, title: "Randevu Al", desc: "Müsait saati seç, birkaç adımda randevunu oluştur, hatırlatmalarla asla unutma." },
-            ].map((s) => (
-              <div key={s.title} className="relative overflow-hidden">
-                <span className="font-grotesk pointer-events-none absolute -top-6 -left-2 text-8xl font-bold text-black/[0.04] select-none dark:text-white/[0.04]">
-                  {s.n}
-                </span>
-                <div className="relative flex size-12 items-center justify-center rounded-full bg-violet-600 text-white">
-                  <s.icon className="size-5" />
-                </div>
-                <h3 className="font-grotesk relative mt-5 text-lg font-bold">{s.title}</h3>
-                <p className="relative mt-2 text-sm text-muted-foreground">{s.desc}</p>
-              </div>
+              { icon: Scissors, title: "Erkek berberi", desc: "Saç kesimi, sakal tıraşı, cilt bakımı ve daha fazlası.", tags: ["Saç Kesimi", "Sakal Tıraşı", "Ağda"] },
+              { icon: Sparkles, title: "Kadın kuaförü", desc: "Kesim, boya, fön, bakım ve tırnak — hepsi tek yerde.", tags: ["Fön", "Boya", "Manikür"] },
+            ].map((s, i) => (
+              <Reveal key={s.title} delay={i * 80}>
+                <Link
+                  href="/ara"
+                  className="group flex h-full flex-col justify-between gap-8 rounded-2xl bg-card p-7 shadow-e1 ring-1 ring-foreground/[0.06] transition-shadow duration-200 ease-[var(--ease-out-quart)] hover:shadow-e2"
+                >
+                  <div>
+                    <span className="flex size-12 items-center justify-center rounded-2xl bg-app-accent-soft text-app-accent-soft-foreground">
+                      <s.icon className="size-6" />
+                    </span>
+                    <h3 className={`${type.h3} mt-5`}>{s.title}</h3>
+                    <p className="mt-2 text-muted-foreground">{s.desc}</p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {s.tags.map((t) => (
+                      <span key={t} className="rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">
+                        {t}
+                      </span>
+                    ))}
+                    <span className="ml-auto inline-flex items-center gap-1 text-sm font-semibold text-app-accent">
+                      Keşfet <ArrowRight className="size-4 transition-transform duration-200 ease-[var(--ease-out-quart)] group-hover:translate-x-0.5" />
+                    </span>
+                  </div>
+                </Link>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* 04 / Karşılaştırma */}
-      <section id="karsilastirma" className="border-t border-black/5 py-24 dark:border-white/10">
-        <div className="mx-auto max-w-4xl px-4">
-          <SectionLabel index="04" label="Karşılaştırma" align="center" />
-          <h2 className="font-grotesk mx-auto mt-4 max-w-2xl text-center text-4xl font-bold tracking-tight text-balance">
-            Diğerleri defterle çalışır.{" "}
-            <span className="font-instrument text-[0.88em] text-violet-600 italic">Kuafi&apos;de saniyede randevu.</span>
-          </h2>
+      {/* ── Kategoriler: bento ── */}
+      {catGroups.length > 0 && (
+        <section className={`${layout.sectionY} border-t border-border bg-secondary/30`}>
+          <div className={layout.container}>
+            <Reveal>
+              <Eyebrow>Hizmetler</Eyebrow>
+              <h2 className={`${type.h1} mt-4 max-w-2xl`}>
+                Saçından tırnağına,{" "}
+                <span className="font-instrument text-[0.9em] font-normal text-app-accent italic">tek adreste</span>.
+              </h2>
+            </Reveal>
+            <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {catGroups.map(([group, categories], i) => {
+                const Icon = GROUP_ICONS[group] ?? Sparkles;
+                const wide = i === 0;
+                return (
+                  <Reveal
+                    key={group}
+                    delay={i * 60}
+                    className={wide ? "lg:col-span-2" : ""}
+                  >
+                    <Link
+                      href={`/ara?kategori=${categories[0]?.slug ?? ""}`}
+                      className="group flex h-full items-start gap-4 rounded-2xl bg-card p-6 shadow-e1 ring-1 ring-foreground/[0.06] transition-shadow duration-200 ease-[var(--ease-out-quart)] hover:shadow-e2"
+                    >
+                      <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-app-accent-soft text-app-accent-soft-foreground">
+                        <Icon className="size-5" />
+                      </span>
+                      <div className="min-w-0">
+                        <h3 className="font-grotesk font-bold">{GROUP_LABELS[group] ?? group}</h3>
+                        <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                          {categories.map((c) => c.name).join(" · ")}
+                        </p>
+                      </div>
+                    </Link>
+                  </Reveal>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
 
-          <div className="mt-14 overflow-hidden rounded-[22px] border border-black/5 dark:border-white/10">
+      {/* ── Öne çıkan salonlar (gerçek veri) ── */}
+      {featuredBusinesses.length > 0 && (
+        <section className={layout.sectionY}>
+          <div className={layout.container}>
+            <Reveal className="flex items-end justify-between gap-4">
+              <div>
+                <Eyebrow>Öne çıkanlar</Eyebrow>
+                <h2 className={`${type.h1} mt-4`}>Öne çıkan salonlar</h2>
+              </div>
+              <Link href="/kesfet" className="hidden shrink-0 items-center gap-1 text-sm font-semibold text-app-accent hover:underline sm:inline-flex">
+                Tümünü gör <ArrowRight className="size-4" />
+              </Link>
+            </Reveal>
+          </div>
+          <div className="mt-10 flex snap-x gap-5 overflow-x-auto px-4 pb-4 sm:px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="shrink-0 sm:w-[max(0px,calc((100vw-72rem)/2))]" aria-hidden />
+            {featuredBusinesses.map((b) => (
+              <div key={b.id} className="w-64 shrink-0 snap-start">
+                <ShowcaseCard business={b} />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ── Nasıl çalışır: bağlı zaman çizelgesi ── */}
+      <section className={`${layout.sectionY} border-t border-border bg-secondary/30`}>
+        <div className={layout.container}>
+          <Reveal className="max-w-2xl">
+            <Eyebrow>Nasıl çalışır</Eyebrow>
+            <h2 className={`${type.h1} mt-4`}>
+              Üç adımda{" "}
+              <span className="font-instrument text-[0.9em] font-normal text-app-accent italic">randevu senin</span>.
+            </h2>
+          </Reveal>
+          <div className="relative mt-12 grid gap-8 md:grid-cols-3">
+            <div aria-hidden className="absolute top-6 right-[16%] left-[16%] hidden h-px bg-border md:block" />
+            {HOW_STEPS.map((s, i) => (
+              <Reveal key={s.n} delay={i * 90} className="relative">
+                <div className="flex items-center gap-3">
+                  <span className="relative z-10 flex size-12 items-center justify-center rounded-full bg-app-accent text-app-accent-foreground">
+                    <s.icon className="size-5" />
+                  </span>
+                  <span className="font-grotesk text-sm font-semibold text-muted-foreground">{s.n}</span>
+                </div>
+                <h3 className={`${type.h3} mt-5`}>{s.title}</h3>
+                <p className="mt-2 text-muted-foreground">{s.desc}</p>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Yorumlar (gerçek veri), ofset ── */}
+      {reviews.length > 0 && (
+        <section className={layout.sectionY}>
+          <div className={layout.container}>
+            <Reveal>
+              <Eyebrow>Topluluk</Eyebrow>
+              <h2 className={`${type.h1} mt-4 max-w-2xl`}>
+                Binlerce müşterinin{" "}
+                <span className="font-instrument text-[0.9em] font-normal text-app-accent italic">güvendiği</span> bir topluluk.
+              </h2>
+            </Reveal>
+            <div className="mt-10 columns-1 gap-5 sm:columns-2 lg:columns-3">
+              {reviews.map((r, i) => (
+                <Reveal key={r.id} delay={(i % 3) * 70} className="mb-5 break-inside-avoid">
+                  <figure className="rounded-2xl bg-card p-6 shadow-e1 ring-1 ring-foreground/[0.06]">
+                    <div className="flex gap-0.5">
+                      {Array.from({ length: 5 }).map((_, j) => (
+                        <Star key={j} className={`size-4 ${j < r.rating ? "fill-app-accent text-app-accent" : "text-muted"}`} />
+                      ))}
+                    </div>
+                    <blockquote className="mt-3 text-sm text-foreground/80">&ldquo;{r.comment}&rdquo;</blockquote>
+                    <figcaption className="mt-5 flex items-center gap-2.5">
+                      <span className="font-grotesk flex size-9 items-center justify-center rounded-full bg-app-accent-soft text-sm font-bold text-app-accent-soft-foreground">
+                        {r.customer.name.charAt(0)}
+                      </span>
+                      <span>
+                        <span className="block text-sm font-medium">{r.customer.name}</span>
+                        <span className="block text-xs text-muted-foreground">
+                          {r.business.name}
+                          {r.business.location?.city ? `, ${r.business.location.city}` : ""}
+                        </span>
+                      </span>
+                    </figcaption>
+                  </figure>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── Karşılaştırma ── */}
+      <section id="karsilastirma" className={`${layout.sectionY} border-t border-border bg-secondary/30`}>
+        <div className={layout.containerNarrow}>
+          <Reveal className="text-center">
+            <h2 className={`${type.h1} mx-auto max-w-2xl`}>
+              Diğerleri defterle çalışır.{" "}
+              <span className="font-instrument text-[0.9em] font-normal text-app-accent italic">Kuafi&apos;de saniyede randevu.</span>
+            </h2>
+          </Reveal>
+          <Reveal className="mt-10 overflow-hidden rounded-2xl bg-card shadow-e1 ring-1 ring-foreground/[0.06]">
             <table className="w-full border-collapse text-sm">
               <thead>
-                <tr className="border-b border-black/5 dark:border-white/10">
+                <tr className="border-b border-border">
                   <th className="p-4 text-left font-medium text-muted-foreground"></th>
-                  <th className="font-grotesk p-4 text-center text-base font-bold text-violet-600">Kuafi</th>
+                  <th className="font-grotesk p-4 text-center text-base font-bold text-app-accent">Kuafi</th>
                   <th className="p-4 text-center font-medium text-muted-foreground">Instagram DM</th>
                   <th className="p-4 text-center font-medium text-muted-foreground">Telefon / Defter</th>
                 </tr>
               </thead>
               <tbody>
                 {COMPARISON_ROWS.map((row, i) => (
-                  <tr key={row} className={i % 2 === 0 ? "bg-secondary/30" : ""}>
+                  <tr key={row} className={i % 2 === 0 ? "bg-secondary/40" : ""}>
                     <td className="p-4 font-medium">{row}</td>
-                    <td className="bg-violet-50 p-4 text-center dark:bg-violet-500/10">
-                      <Check className="mx-auto size-4.5 text-violet-600" />
+                    <td className="bg-app-accent-soft/50 p-4 text-center">
+                      <Check className="mx-auto size-4.5 text-app-accent" />
                     </td>
-                    <td className="p-4 text-center">
-                      <X className="mx-auto size-4.5 text-muted-foreground/40" />
-                    </td>
-                    <td className="p-4 text-center">
-                      <X className="mx-auto size-4.5 text-muted-foreground/40" />
-                    </td>
+                    <td className="p-4 text-center"><X className="mx-auto size-4.5 text-muted-foreground/40" /></td>
+                    <td className="p-4 text-center"><X className="mx-auto size-4.5 text-muted-foreground/40" /></td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── İşletme bandı ── */}
+      <section className="border-t border-border">
+        <div className={`${layout.container} py-14`}>
+          <div className="flex flex-col items-center gap-4 rounded-2xl bg-secondary/50 px-6 py-8 text-center ring-1 ring-foreground/[0.06] sm:flex-row sm:justify-between sm:text-left">
+            <div>
+              <h2 className={type.h3}>İşletme misin?</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Kuafi Pro ile takvimini doldur, yeni müşteriler kazan — ilk ay ücretsiz.
+              </p>
+            </div>
+            <a href={proHref("/")} className={`${btn.primary} shrink-0`}>
+              İşletme tarafına geç <ArrowRight className="size-4" />
+            </a>
           </div>
         </div>
       </section>
 
-      {/* 05 / SSS */}
-      <section id="sss" className="border-t border-black/5 bg-secondary/30 py-24 dark:border-white/10">
-        <div className="mx-auto max-w-3xl px-4">
-          <SectionLabel index="05" label="SSS" align="center" />
-          <h2 className="font-grotesk mx-auto mt-4 max-w-2xl text-center text-4xl font-bold tracking-tight text-balance">
-            Sıkça sorulan{" "}
-            <span className="font-instrument text-[0.88em] text-violet-600 italic">sorular</span>.
-          </h2>
-          <Accordion type="single" collapsible className="mt-12">
-            {[
-              { q: "Kuafi kullanmak ücretsiz mi?", a: "Müşteriler için Kuafi tamamen ücretsizdir. İşletmeler için tek bir Kuafi Pro planı vardır, ilk ay ücretsizdir." },
-              { q: "Randevumu nasıl iptal ederim?", a: "Randevularım sayfasından ilgili randevuyu seçip iptal edebilirsin." },
-              { q: "Yorumlar gerçek mi?", a: "Evet. Sadece o işletmeden gerçekten randevu almış ve hizmeti tamamlamış müşteriler yorum yapabilir." },
-              { q: "İşletmemi nasıl kaydederim?", a: "\"İşletmeni Kaydet\" butonuna tıklayıp birkaç adımda profilini oluşturabilirsin." },
-            ].map((item) => (
+      {/* ── SSS ── */}
+      <section id="sss" className={layout.sectionY}>
+        <div className={layout.containerNarrow}>
+          <Reveal className="text-center">
+            <Eyebrow>SSS</Eyebrow>
+            <h2 className={`${type.h1} mx-auto mt-4 max-w-2xl`}>
+              Sıkça sorulan{" "}
+              <span className="font-instrument text-[0.9em] font-normal text-app-accent italic">sorular</span>.
+            </h2>
+          </Reveal>
+          <Accordion type="single" collapsible className="mt-10">
+            {FAQ.map((item) => (
               <AccordionItem key={item.q} value={item.q}>
                 <AccordionTrigger className="font-grotesk text-base font-semibold">{item.q}</AccordionTrigger>
                 <AccordionContent>{item.a}</AccordionContent>
@@ -302,81 +413,19 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* İşletme bandı — müşteri landing'inde küçük bir geçiş, tam pitch pro tarafında */}
-      <section className="border-t border-black/5 py-14 dark:border-white/10">
-        <div className="mx-auto max-w-4xl px-4">
-          <div className="flex flex-col items-center gap-4 rounded-[24px] border border-black/5 bg-secondary/40 px-6 py-8 text-center sm:flex-row sm:justify-between sm:text-left dark:border-white/10">
-            <div>
-              <h2 className="font-grotesk text-lg font-bold">İşletme misin?</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Kuafi Pro ile takvimini doldur, yeni müşteriler kazan — ilk ay ücretsiz.
-              </p>
-            </div>
-            <a
-              href={proHref("/")}
-              className="inline-flex shrink-0 items-center justify-center rounded-full bg-violet-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-violet-700"
-            >
-              İşletme tarafına geç →
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* Uygulama */}
-      <section className="border-t border-black/5 py-24 dark:border-white/10">
-        <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 md:grid-cols-2">
-          <div className="text-center md:text-left">
-            <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-violet-100 text-violet-700 md:mx-0 dark:bg-violet-500/15 dark:text-violet-300">
-              <Smartphone className="size-6" />
-            </div>
-            <h2 className="font-grotesk mt-6 text-4xl font-bold tracking-tight text-balance">
-              Cebinde de{" "}
-              <span className="font-instrument text-[0.88em] text-violet-600 italic">yanında</span>.
-            </h2>
-            <p className="mx-auto mt-4 max-w-sm text-muted-foreground md:mx-0">
-              Kuafi mobil uygulaması yakında App Store ve Google Play&apos;de. Şimdilik web
-              uygulamasını telefonundan da sorunsuzca kullanabilirsin.
-            </p>
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-3 md:justify-start">
-              <span className="relative flex items-center gap-2 rounded-xl border border-black/10 px-4 py-2.5 text-sm font-medium text-muted-foreground opacity-60 dark:border-white/15">
-                App Store
-                <span className="absolute -top-2 -right-2 rounded-full bg-violet-600 px-1.5 py-0.5 text-[9px] font-bold text-white">
-                  YAKINDA
-                </span>
-              </span>
-              <span className="relative flex items-center gap-2 rounded-xl border border-black/10 px-4 py-2.5 text-sm font-medium text-muted-foreground opacity-60 dark:border-white/15">
-                Google Play
-                <span className="absolute -top-2 -right-2 rounded-full bg-violet-600 px-1.5 py-0.5 text-[9px] font-bold text-white">
-                  YAKINDA
-                </span>
-              </span>
-            </div>
-            <Link
-              href="/kesfet"
-              className="mt-8 inline-block rounded-full bg-violet-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-violet-700"
-            >
-              Şimdi Web&apos;de Dene
-            </Link>
-          </div>
-
-          <div className="relative mx-auto aspect-[4/5] w-full max-w-sm">
-            <div className="relative h-full w-full overflow-hidden rounded-[28px] shadow-[0_1px_2px_rgba(0,0,0,0.04),0_32px_60px_-24px_rgba(0,0,0,0.25)]">
-              {showcaseBusiness?.coverImageUrl && (
-                <Image
-                  src={showcaseBusiness.coverImageUrl}
-                  alt={showcaseBusiness.name}
-                  fill
-                  sizes="(max-width: 768px) 90vw, 400px"
-                  className="object-cover"
-                />
-              )}
-            </div>
-            {showcaseBusiness && (
-              <div className="absolute -bottom-8 -left-8 w-56 rotate-[-4deg]">
-                <ShowcaseCard business={showcaseBusiness} />
-              </div>
-            )}
-          </div>
+      {/* ── Final CTA: koyu bölüm ── */}
+      <section className="bg-neutral-950 text-white">
+        <div className={`${layout.container} flex flex-col items-center gap-6 py-20 text-center md:py-28`}>
+          <h2 className={`${type.h1} max-w-2xl`}>
+            Bir sonraki randevun{" "}
+            <span className="font-instrument text-[0.9em] font-normal text-app-accent italic">bir dokunuş</span> uzakta.
+          </h2>
+          <p className="max-w-md text-white/60">
+            Yakınındaki en iyi salonları keşfet, saniyeler içinde yerini ayır.
+          </p>
+          <Link href="/kesfet" className={btn.primary}>
+            Kuaför Bul <ArrowRight className="size-4" />
+          </Link>
         </div>
       </section>
     </div>

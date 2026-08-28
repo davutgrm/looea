@@ -71,7 +71,7 @@ export function MockProfileCard() {
           </div>
         ))}
       </div>
-      <div className="mt-4 rounded-full bg-black py-2.5 text-center text-sm font-semibold text-white dark:bg-white dark:text-black">
+      <div className="mt-4 rounded-full bg-app-accent py-2.5 text-center text-sm font-semibold text-app-accent-foreground">
         Randevu Al
       </div>
     </div>

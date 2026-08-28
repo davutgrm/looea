@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { btn } from "@/lib/design-tokens";
 
 export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
   const router = useRouter();
@@ -66,11 +67,7 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
           className="focus-visible:border-app-accent focus-visible:ring-app-accent/50"
         />
       </div>
-      <button
-        type="submit"
-        disabled={isPending}
-        className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-black px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-black/90 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-white/90"
-      >
+      <button type="submit" disabled={isPending} className={`${btn.primary} w-full`}>
         {isPending && <Loader2 className="size-4 animate-spin" />}
         Giriş Yap
       </button>

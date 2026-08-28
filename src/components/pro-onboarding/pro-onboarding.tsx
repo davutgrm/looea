@@ -38,6 +38,7 @@ import { BUSINESS_KIND_OPTIONS, REFERRAL_SOURCE_OPTIONS } from "@/lib/business-t
 import { registerBusiness } from "@/lib/actions/auth";
 import type { BusinessType } from "@/generated/prisma/client";
 import type { LatLng } from "@/lib/maps/types";
+import { btn } from "@/lib/design-tokens";
 import { MockCalendarCard, MockProfileCard, MockStatsCard } from "./mockups";
 
 const LocationPicker = dynamic(
@@ -250,7 +251,7 @@ export function ProOnboarding() {
           <button
             type="button"
             onClick={() => router.push("/business")}
-            className="mt-8 inline-flex items-center justify-center gap-1.5 rounded-full bg-black px-7 py-3 text-sm font-semibold text-white transition-colors hover:bg-black/90 dark:bg-white dark:text-black dark:hover:bg-white/90"
+            className={`${btn.primary} mt-8`}
           >
             Panele Git
             <ArrowRight className="size-4" />
@@ -299,7 +300,7 @@ export function ProOnboarding() {
           type="button"
           onClick={primaryAction}
           disabled={!canAdvance() || isPending}
-          className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full bg-black px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-black/90 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-white dark:text-black dark:hover:bg-white/90"
+          className={`${btn.primary} flex-1`}
         >
           {isPending && <Loader2 className="size-4 animate-spin" />}
           {step === "referral" ? "İşletmeni Oluştur" : "Devam"}

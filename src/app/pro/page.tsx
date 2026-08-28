@@ -17,62 +17,22 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Badge } from "@/components/ui/badge";
 import { Price } from "@/components/business/price";
-import { SectionLabel, SectionNumeral } from "@/components/marketing/section-label";
+import { MockCalendarCard, MockStatsCard } from "@/components/pro-onboarding/mockups";
+import { Reveal } from "@/components/ui/reveal";
+import { type, layout, btn } from "@/lib/design-tokens";
 
-const FEATURES = [
-  {
-    icon: CalendarCheck,
-    title: "Akıllı takvim",
-    desc: "Online randevular otomatik takvimine düşer. Çift rezervasyon yok, telefon trafiği yok.",
-  },
-  {
-    icon: Users,
-    title: "Personel yönetimi",
-    desc: "Her çalışanın mesai ve molalarını tanımla, randevular müsaitliğe göre dağılsın.",
-  },
-  {
-    icon: Star,
-    title: "Doğrulanmış yorumlar",
-    desc: "Sadece gerçekten hizmet alan müşteriler yorum yapar — güvenin gerçek olur.",
-  },
-  {
-    icon: BarChart3,
-    title: "İstatistikler",
-    desc: "Doluluk, ciro ve müşteri sadakatini tek ekrandan takip et, kararlarını veriyle ver.",
-  },
-  {
-    icon: Bell,
-    title: "Otomatik hatırlatma",
-    desc: "Müşterilere otomatik randevu hatırlatması — gelmeyen müşteri derdi azalır.",
-  },
-  {
-    icon: Sparkles,
-    title: "Vitrin profili",
-    desc: "Çalışmalarını, hizmetlerini ve fiyatlarını sergile, Kuafi yeni müşteri getirsin.",
-  },
+const SMALL_FEATURES = [
+  { icon: Users, title: "Personel yönetimi", desc: "Her çalışanın mesai ve molalarını tanımla; randevular müsaitliğe göre dağılsın." },
+  { icon: Star, title: "Doğrulanmış yorumlar", desc: "Sadece gerçekten hizmet alan müşteriler yorum yapar — güvenin gerçek olur." },
+  { icon: Bell, title: "Otomatik hatırlatma", desc: "Müşterilere otomatik randevu hatırlatması; gelmeyen müşteri derdi azalır." },
+  { icon: Sparkles, title: "Vitrin profili", desc: "Çalışmalarını, hizmetlerini ve fiyatlarını sergile; Kuafi yeni müşteri getirsin." },
 ];
 
 const STEPS = [
-  {
-    n: "01",
-    icon: Sparkles,
-    title: "Profilini oluştur",
-    desc: "Birkaç adımda işletmeni kaydet, hizmetlerini ve çalışanlarını ekle.",
-  },
-  {
-    n: "02",
-    icon: Clock,
-    title: "Müsaitliğini bağla",
-    desc: "Çalışma saatlerini ve personel mesaisini tanımla, takvim otomatik dolsun.",
-  },
-  {
-    n: "03",
-    icon: CalendarCheck,
-    title: "Randevuları al",
-    desc: "Müşteriler 7/24 online randevu alsın, sen işine odaklan.",
-  },
+  { n: "01", icon: Sparkles, title: "Profilini oluştur", desc: "Birkaç adımda işletmeni kaydet, hizmetlerini ve çalışanlarını ekle." },
+  { n: "02", icon: Clock, title: "Müsaitliğini bağla", desc: "Çalışma saatlerini ve personel mesaisini tanımla; takvim otomatik dolsun." },
+  { n: "03", icon: CalendarCheck, title: "Randevuları al", desc: "Müşteriler 7/24 online randevu alsın, sen işine odaklan." },
 ];
 
 const PLAN_FEATURES = [
@@ -85,191 +45,241 @@ const PLAN_FEATURES = [
 ];
 
 const FAQ = [
-  {
-    q: "İlk ay gerçekten ücretsiz mi?",
-    a: "Evet. İşletmeni kaydettiğinde ilk ay tamamen ücretsizdir, kart bilgisi olmadan başlayabilirsin.",
-  },
-  {
-    q: "Komisyon alıyor musunuz?",
-    a: "Hayır. Randevu başına komisyon yok. Tek bir aylık plan var: 499₺/ay, hepsi bu.",
-  },
-  {
-    q: "Kurulum ne kadar sürer?",
-    a: "Birkaç dakika. Profilini oluştur, hizmet ve çalışanlarını ekle, çalışma saatlerini gir — randevu almaya hazırsın.",
-  },
-  {
-    q: "İstediğim zaman iptal edebilir miyim?",
-    a: "Evet. Taahhüt yok, istediğin an üyeliğini durdurabilirsin.",
-  },
+  { q: "İlk ay gerçekten ücretsiz mi?", a: "Evet. İşletmeni kaydettiğinde ilk ay tamamen ücretsizdir, kart bilgisi olmadan başlayabilirsin." },
+  { q: "Komisyon alıyor musunuz?", a: "Hayır. Randevu başına komisyon yok. Tek bir aylık plan var: 499₺/ay, hepsi bu." },
+  { q: "Kurulum ne kadar sürer?", a: "Birkaç dakika. Profilini oluştur, hizmet ve çalışanlarını ekle, çalışma saatlerini gir — randevu almaya hazırsın." },
+  { q: "İstediğim zaman iptal edebilir miyim?", a: "Evet. Taahhüt yok, istediğin an üyeliğini durdurabilirsin." },
 ];
+
+function Eyebrow({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center gap-2 text-xs font-semibold tracking-[0.18em] text-app-accent uppercase">
+      <span className="h-px w-6 bg-app-accent/50" />
+      {children}
+    </span>
+  );
+}
 
 export default function ProLandingPage() {
   return (
     <div className="overflow-x-clip">
-      {/* Hero */}
+      {/* ── Hero: asimetrik, ürün önde ── */}
       <section className="relative">
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[640px] bg-[radial-gradient(ellipse_55%_50%_at_50%_0%,rgba(162,28,219,0.14),transparent_70%)]"
+          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[560px] bg-[radial-gradient(70%_60%_at_15%_0%,rgba(162,28,219,0.10),transparent_70%)]"
         />
-        <div className="mx-auto max-w-2xl px-4 pt-16 pb-20 text-center md:pt-24 md:pb-28">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold text-violet-700 dark:bg-violet-500/15 dark:text-violet-300">
-            <Sparkles className="size-3.5" /> İlk ay ücretsiz — kart gerekmez
-          </span>
-          <h1 className="font-grotesk mx-auto mt-6 max-w-xl text-5xl leading-[1.08] font-bold tracking-tight text-balance md:text-6xl">
-            <span className="block">İşini büyüt,</span>
-            <span className="mt-1 block">
-              <span className="font-instrument text-[0.88em] text-violet-600 italic">takvimini doldur</span>.
-            </span>
-          </h1>
-          <p className="mx-auto mt-5 max-w-md text-lg text-muted-foreground text-pretty">
-            Instagram DM&apos;i ve telefon trafiğini bırak. Kuaför, berber ve güzellik
-            salonun için online randevu sistemi — Kuafi yeni müşterileri sana getirsin.
-          </p>
-
-          <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link
-              href="/isletme-kaydet"
-              className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-violet-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-violet-700 sm:w-auto"
-            >
-              İşletmeni Ücretsiz Kaydet
-              <ArrowRight className="size-4" />
-            </Link>
-            <Link
-              href="/giris"
-              className="inline-flex w-full items-center justify-center rounded-full border border-black/10 px-6 py-3 text-sm font-semibold transition-colors hover:bg-secondary sm:w-auto dark:border-white/15"
-            >
-              İşletme Girişi
-            </Link>
-          </div>
-
-          <div className="mt-12 flex justify-center gap-10 text-sm">
-            <div>
-              <div className="font-grotesk text-2xl font-bold">7/24</div>
-              <div className="text-muted-foreground">Online randevu</div>
-            </div>
-            <div>
-              <div className="font-grotesk text-2xl font-bold">%0</div>
-              <div className="text-muted-foreground">Komisyon</div>
-            </div>
-            <div>
-              <div className="font-grotesk text-2xl font-bold">1 ay</div>
-              <div className="text-muted-foreground">Ücretsiz</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 01 / Özellikler */}
-      <section id="ozellikler" className="relative border-t border-black/5 py-24 dark:border-white/10">
-        <SectionNumeral n="01" className="left-1/2 -translate-x-1/2" />
-        <div className="relative mx-auto max-w-6xl px-4">
-          <SectionLabel index="01" label="Özellikler" align="center" />
-          <h2 className="font-grotesk mx-auto mt-4 max-w-2xl text-center text-4xl font-bold tracking-tight text-balance">
-            İşletmeni yönetmek için{" "}
-            <span className="font-instrument text-[0.88em] text-violet-600 italic">her şey</span> burada.
-          </h2>
-
-          <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {FEATURES.map((f) => (
-              <div
-                key={f.title}
-                className="rounded-[22px] border border-black/5 bg-card p-6 shadow-sm dark:border-white/10"
-              >
-                <div className="flex size-11 items-center justify-center rounded-full bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300">
-                  <f.icon className="size-5" />
-                </div>
-                <h3 className="font-grotesk mt-4 font-bold">{f.title}</h3>
-                <p className="mt-1.5 text-sm text-muted-foreground">{f.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 02 / Nasıl çalışır */}
-      <section id="nasil-calisir" className="border-t border-black/5 bg-secondary/30 py-24 dark:border-white/10">
-        <div className="mx-auto max-w-6xl px-4">
-          <SectionLabel index="02" label="Nasıl Çalışır" align="center" />
-          <h2 className="font-grotesk mx-auto mt-4 max-w-2xl text-center text-4xl font-bold tracking-tight text-balance">
-            Üç adımda{" "}
-            <span className="font-instrument text-[0.88em] text-violet-600 italic">randevu almaya başla</span>.
-          </h2>
-
-          <div className="mt-16 grid gap-10 md:grid-cols-3">
-            {STEPS.map((s) => (
-              <div key={s.title} className="relative overflow-hidden">
-                <span className="font-grotesk pointer-events-none absolute -top-6 -left-2 text-8xl font-bold text-black/[0.04] select-none dark:text-white/[0.04]">
-                  {s.n}
-                </span>
-                <div className="relative flex size-12 items-center justify-center rounded-full bg-violet-600 text-white">
-                  <s.icon className="size-5" />
-                </div>
-                <h3 className="font-grotesk relative mt-5 text-lg font-bold">{s.title}</h3>
-                <p className="relative mt-2 text-sm text-muted-foreground">{s.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 03 / Fiyat */}
-      <section id="fiyat" className="border-t border-black/5 py-24 dark:border-white/10">
-        <div className="mx-auto max-w-4xl px-4">
-          <SectionLabel index="03" label="Fiyat" align="center" />
-          <h2 className="font-grotesk mx-auto mt-4 max-w-2xl text-center text-4xl font-bold tracking-tight text-balance">
-            Tek plan,{" "}
-            <span className="font-instrument text-[0.88em] text-violet-600 italic">gizli ücret yok</span>.
-          </h2>
-
-          <div className="relative mx-auto mt-14 max-w-sm overflow-hidden rounded-[28px] border border-violet-600/20 bg-card p-8 text-center shadow-[0_1px_2px_rgba(0,0,0,0.04),0_32px_60px_-24px_rgba(0,0,0,0.25)]">
-            <Badge variant="accent" className="mx-auto">
-              <Wallet className="size-3.5" /> İlk ay ücretsiz
-            </Badge>
-            <h3 className="font-grotesk mt-4 text-2xl font-bold">Kuafi Pro</h3>
-            <p className="mt-1.5 text-sm text-muted-foreground">
-              Randevularını yönet, yeni müşteri kazan.
-            </p>
-
-            <div className="mt-6 flex items-baseline justify-center gap-1.5">
-              <span className="font-grotesk text-5xl font-bold tracking-tight">
-                <Price amount={499} />
+        <div className={`${layout.container} grid items-center gap-12 py-16 md:grid-cols-[1.05fr_0.95fr] md:py-24`}>
+          <div>
+            <Eyebrow>Kuafi Pro</Eyebrow>
+            <h1 className={`${type.display} mt-5`}>
+              İşini büyüt,{" "}
+              <span className="font-instrument text-[0.9em] font-normal text-app-accent italic">
+                takvimini doldur
               </span>
-              <span className="text-muted-foreground">/ ay</span>
-            </div>
-            <p className="mt-2 text-xs text-muted-foreground">
-              Ayda tek yeni müşteri getirse kendini karşılar.
+              .
+            </h1>
+            <p className={`${type.bodyLg} mt-5 max-w-md`}>
+              Kuaför, berber ve güzellik salonun için online randevu sistemi. Telefon
+              trafiğini bırak; Kuafi yeni müşterileri sana getirsin.
             </p>
 
-            <Link
-              href="/isletme-kaydet"
-              className="mt-8 inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-violet-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-violet-700"
-            >
-              Hemen Başla
-              <ArrowRight className="size-4" />
-            </Link>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Link href="/isletme-kaydet" className={btn.primary}>
+                İşletmeni Ücretsiz Kaydet <ArrowRight className="size-4" />
+              </Link>
+              <Link href="/giris" className={btn.secondary}>
+                İşletme Girişi
+              </Link>
+            </div>
 
-            <ul className="mt-8 space-y-2.5 text-left">
+            <dl className="mt-10 flex gap-8">
+              {[
+                ["7/24", "Online randevu"],
+                ["%0", "Komisyon"],
+                ["1 ay", "Ücretsiz"],
+              ].map(([v, l]) => (
+                <div key={l}>
+                  <dt className="font-grotesk text-2xl font-bold tracking-tight">{v}</dt>
+                  <dd className="text-sm text-muted-foreground">{l}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+
+          {/* Ürün mockup kümesi */}
+          <div className="relative mx-auto hidden h-[440px] w-full max-w-md md:block" aria-hidden>
+            <div className="absolute top-1 left-1 rotate-[-3deg]">
+              <MockCalendarCard />
+            </div>
+            <div className="absolute right-0 bottom-1 w-64 rotate-[3deg]">
+              <MockStatsCard />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Güven şeridi ── */}
+      <section className="border-y border-border bg-secondary/40">
+        <div className={`${layout.container} flex flex-wrap items-center justify-center gap-x-10 gap-y-3 py-5 text-sm`}>
+          <span className="flex items-center gap-2 font-medium">
+            <Wallet className="size-4 text-app-accent" /> İlk ay ücretsiz — kart gerekmez
+          </span>
+          <span className="flex items-center gap-2 text-muted-foreground">
+            <Check className="size-4 text-app-accent" /> Komisyon yok
+          </span>
+          <span className="flex items-center gap-2 text-muted-foreground">
+            <Check className="size-4 text-app-accent" /> Taahhüt yok, istediğin an iptal
+          </span>
+        </div>
+      </section>
+
+      {/* ── Özellikler: bento (büyük takvim tile + küçükler) ── */}
+      <section id="ozellikler" className={layout.sectionY}>
+        <div className={layout.container}>
+          <Reveal className="max-w-2xl">
+            <Eyebrow>Özellikler</Eyebrow>
+            <h2 className={`${type.h1} mt-4`}>
+              İşletmeni yönetmek için{" "}
+              <span className="font-instrument text-[0.9em] font-normal text-app-accent italic">her şey</span> burada.
+            </h2>
+          </Reveal>
+
+          <div className="mt-10 grid gap-4 lg:grid-cols-3">
+            {/* Büyük takvim tile */}
+            <Reveal className="lg:col-span-2">
+              <div className="flex h-full flex-col justify-between gap-6 overflow-hidden rounded-2xl bg-card p-7 shadow-e1 ring-1 ring-foreground/[0.06] sm:flex-row sm:items-center">
+                <div className="sm:max-w-xs">
+                  <span className="flex size-11 items-center justify-center rounded-2xl bg-app-accent-soft text-app-accent-soft-foreground">
+                    <CalendarCheck className="size-5" />
+                  </span>
+                  <h3 className={`${type.h3} mt-5`}>Akıllı takvim</h3>
+                  <p className="mt-2 text-muted-foreground">
+                    Online randevular otomatik takvimine düşer. Çift rezervasyon yok, telefon
+                    trafiği yok.
+                  </p>
+                </div>
+                <div className="shrink-0" aria-hidden>
+                  <MockCalendarCard />
+                </div>
+              </div>
+            </Reveal>
+
+            {/* İstatistik tile */}
+            <Reveal delay={80}>
+              <div className="flex h-full flex-col justify-between gap-6 rounded-2xl bg-card p-7 shadow-e1 ring-1 ring-foreground/[0.06]">
+                <div>
+                  <span className="flex size-11 items-center justify-center rounded-2xl bg-app-accent-soft text-app-accent-soft-foreground">
+                    <BarChart3 className="size-5" />
+                  </span>
+                  <h3 className={`${type.h3} mt-5`}>İstatistikler</h3>
+                  <p className="mt-2 text-muted-foreground">
+                    Doluluk, ciro ve müşteri sadakatini tek ekrandan takip et.
+                  </p>
+                </div>
+              </div>
+            </Reveal>
+
+            {/* Küçük özellikler */}
+            {SMALL_FEATURES.map((f, i) => (
+              <Reveal key={f.title} delay={i * 60}>
+                <div className="h-full rounded-2xl bg-card p-6 shadow-e1 ring-1 ring-foreground/[0.06]">
+                  <span className="flex size-11 items-center justify-center rounded-2xl bg-app-accent-soft text-app-accent-soft-foreground">
+                    <f.icon className="size-5" />
+                  </span>
+                  <h3 className="font-grotesk mt-4 font-bold">{f.title}</h3>
+                  <p className="mt-1.5 text-sm text-muted-foreground">{f.desc}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Nasıl çalışır: bağlı zaman çizelgesi ── */}
+      <section id="nasil-calisir" className={`${layout.sectionY} border-t border-border bg-secondary/30`}>
+        <div className={layout.container}>
+          <Reveal className="max-w-2xl">
+            <Eyebrow>Nasıl çalışır</Eyebrow>
+            <h2 className={`${type.h1} mt-4`}>
+              Üç adımda{" "}
+              <span className="font-instrument text-[0.9em] font-normal text-app-accent italic">randevu almaya başla</span>.
+            </h2>
+          </Reveal>
+          <div className="relative mt-12 grid gap-8 md:grid-cols-3">
+            <div aria-hidden className="absolute top-6 right-[16%] left-[16%] hidden h-px bg-border md:block" />
+            {STEPS.map((s, i) => (
+              <Reveal key={s.n} delay={i * 90} className="relative">
+                <div className="flex items-center gap-3">
+                  <span className="relative z-10 flex size-12 items-center justify-center rounded-full bg-app-accent text-app-accent-foreground">
+                    <s.icon className="size-5" />
+                  </span>
+                  <span className="font-grotesk text-sm font-semibold text-muted-foreground">{s.n}</span>
+                </div>
+                <h3 className={`${type.h3} mt-5`}>{s.title}</h3>
+                <p className="mt-2 text-muted-foreground">{s.desc}</p>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Fiyat: iki kolon (ifade + plan kartı) ── */}
+      <section id="fiyat" className={layout.sectionY}>
+        <div className={`${layout.container} grid items-center gap-12 md:grid-cols-2`}>
+          <Reveal>
+            <Eyebrow>Fiyat</Eyebrow>
+            <h2 className={`${type.h1} mt-4`}>
+              Tek plan,{" "}
+              <span className="font-instrument text-[0.9em] font-normal text-app-accent italic">gizli ücret yok</span>.
+            </h2>
+            <p className="mt-4 max-w-md text-muted-foreground">
+              Komisyon yok, taahhüt yok. Ayda tek yeni müşteri getirse Kuafi Pro kendini
+              karşılar. İlk ay tamamen ücretsiz.
+            </p>
+            <ul className="mt-8 grid max-w-md gap-2.5 sm:grid-cols-2">
               {PLAN_FEATURES.map((item) => (
                 <li key={item} className="flex items-start gap-2.5 text-sm">
-                  <Check className="mt-0.5 size-4 shrink-0 text-violet-600" />
+                  <Check className="mt-0.5 size-4 shrink-0 text-app-accent" />
                   {item}
                 </li>
               ))}
             </ul>
-          </div>
+          </Reveal>
+
+          <Reveal delay={80} className="mx-auto w-full max-w-sm">
+            <div className="overflow-hidden rounded-[28px] bg-card p-8 text-center shadow-e2 ring-1 ring-app-accent/20">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-app-accent-soft px-3 py-1 text-xs font-semibold text-app-accent-soft-foreground">
+                <Wallet className="size-3.5" /> İlk ay ücretsiz
+              </span>
+              <h3 className="font-grotesk mt-4 text-2xl font-bold">Kuafi Pro</h3>
+              <p className="mt-1.5 text-sm text-muted-foreground">Randevularını yönet, yeni müşteri kazan.</p>
+              <div className="mt-6 flex items-baseline justify-center gap-1.5">
+                <span className="font-grotesk text-5xl font-bold tracking-tight">
+                  <Price amount={499} />
+                </span>
+                <span className="text-muted-foreground">/ ay</span>
+              </div>
+              <Link href="/isletme-kaydet" className={`${btn.primary} mt-8 w-full`}>
+                Hemen Başla <ArrowRight className="size-4" />
+              </Link>
+              <p className="mt-3 text-xs text-muted-foreground">Kart bilgisi olmadan başla.</p>
+            </div>
+          </Reveal>
         </div>
       </section>
 
-      {/* 04 / SSS */}
-      <section id="sss" className="border-t border-black/5 bg-secondary/30 py-24 dark:border-white/10">
-        <div className="mx-auto max-w-3xl px-4">
-          <SectionLabel index="04" label="SSS" align="center" />
-          <h2 className="font-grotesk mx-auto mt-4 max-w-2xl text-center text-4xl font-bold tracking-tight text-balance">
-            Sıkça sorulan{" "}
-            <span className="font-instrument text-[0.88em] text-violet-600 italic">sorular</span>.
-          </h2>
-          <Accordion type="single" collapsible className="mt-12">
+      {/* ── SSS ── */}
+      <section id="sss" className={`${layout.sectionY} border-t border-border bg-secondary/30`}>
+        <div className={layout.containerNarrow}>
+          <Reveal className="text-center">
+            <Eyebrow>SSS</Eyebrow>
+            <h2 className={`${type.h1} mx-auto mt-4 max-w-2xl`}>
+              Sıkça sorulan{" "}
+              <span className="font-instrument text-[0.9em] font-normal text-app-accent italic">sorular</span>.
+            </h2>
+          </Reveal>
+          <Accordion type="single" collapsible className="mt-10">
             {FAQ.map((item) => (
               <AccordionItem key={item.q} value={item.q}>
                 <AccordionTrigger className="font-grotesk text-base font-semibold">{item.q}</AccordionTrigger>
@@ -280,22 +290,18 @@ export default function ProLandingPage() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="border-t border-black/5 py-24 dark:border-white/10">
-        <div className="mx-auto max-w-3xl px-4 text-center">
-          <h2 className="font-grotesk mx-auto max-w-xl text-4xl font-bold tracking-tight text-balance">
+      {/* ── Final CTA: koyu bölüm ── */}
+      <section className="bg-neutral-950 text-white">
+        <div className={`${layout.container} flex flex-col items-center gap-6 py-20 text-center md:py-28`}>
+          <h2 className={`${type.h1} max-w-2xl`}>
             İşletmeni bugün{" "}
-            <span className="font-instrument text-[0.88em] text-violet-600 italic">Kuafi&apos;ye taşı</span>.
+            <span className="font-instrument text-[0.9em] font-normal text-app-accent italic">Kuafi&apos;ye taşı</span>.
           </h2>
-          <p className="mx-auto mt-4 max-w-md text-muted-foreground">
+          <p className="max-w-md text-white/60">
             İlk ay ücretsiz, komisyon yok, taahhüt yok. Kurulum birkaç dakika.
           </p>
-          <Link
-            href="/isletme-kaydet"
-            className="mt-8 inline-flex items-center justify-center gap-1.5 rounded-full bg-violet-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-violet-700"
-          >
-            İşletmeni Ücretsiz Kaydet
-            <ArrowRight className="size-4" />
+          <Link href="/isletme-kaydet" className={btn.primary}>
+            İşletmeni Ücretsiz Kaydet <ArrowRight className="size-4" />
           </Link>
         </div>
       </section>

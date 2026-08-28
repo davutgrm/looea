@@ -7,6 +7,7 @@ import { Loader2, MailCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { requestPasswordReset } from "@/lib/actions/auth";
+import { btn } from "@/lib/design-tokens";
 
 export function ForgotPasswordForm() {
   const [email, setEmail] = useState("");
@@ -36,10 +37,7 @@ export function ForgotPasswordForm() {
           Eğer <span className="font-medium text-foreground">{email}</span> ile kayıtlı bir hesap
           varsa, şifre sıfırlama bağlantısını e-postana gönderdik.
         </p>
-        <Link
-          href="/giris"
-          className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-black px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-black/90 dark:bg-white dark:text-black dark:hover:bg-white/90"
-        >
+        <Link href="/giris" className={`${btn.primary} mt-6 w-full`}>
           Girişe dön
         </Link>
       </div>
@@ -61,11 +59,7 @@ export function ForgotPasswordForm() {
           className="focus-visible:border-app-accent focus-visible:ring-app-accent/50"
         />
       </div>
-      <button
-        type="submit"
-        disabled={isPending}
-        className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-black px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-black/90 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-white/90"
-      >
+      <button type="submit" disabled={isPending} className={`${btn.primary} w-full`}>
         {isPending && <Loader2 className="size-4 animate-spin" />}
         Sıfırlama bağlantısı gönder
       </button>

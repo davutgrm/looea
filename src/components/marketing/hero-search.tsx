@@ -24,7 +24,7 @@ export function HeroSearch() {
           type="button"
           onClick={() => setMode("salon")}
           className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-colors ${
-            mode === "salon" ? "bg-black text-white" : "text-black/50 hover:text-black dark:text-white/50 dark:hover:text-white"
+            mode === "salon" ? "bg-app-accent text-app-accent-foreground" : "text-black/50 hover:text-black dark:text-white/50 dark:hover:text-white"
           }`}
         >
           Salonda
