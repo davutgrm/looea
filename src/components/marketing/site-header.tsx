@@ -6,14 +6,14 @@ export function SiteHeader() {
     <header className="sticky top-4 z-30 px-4">
       <div className="mx-auto flex h-16 max-w-5xl items-center gap-6 rounded-full border border-black/5 bg-white/90 px-5 shadow-[0_1px_2px_rgba(0,0,0,0.03),0_16px_32px_-16px_rgba(0,0,0,0.15)] backdrop-blur-md dark:border-white/10 dark:bg-neutral-900/90">
         <Link href="/" className="font-grotesk flex items-center gap-1.5 text-xl font-bold tracking-tight">
-          Kuafi
+          Looea
           <span className="size-1.5 rounded-full bg-violet-600" />
         </Link>
 
         <nav className="hidden items-center gap-6 text-sm font-medium text-black/60 md:flex dark:text-white/60">
           <Link href="/#hizmetler" className="hover:text-foreground">Hizmetler</Link>
           <Link href="/#nasil-calisir" className="hover:text-foreground">Nasıl Çalışır</Link>
-          <Link href="/#karsilastirma" className="hover:text-foreground">Neden Kuafi</Link>
+          <Link href="/#karsilastirma" className="hover:text-foreground">Neden Looea</Link>
           <Link href="/#sss" className="hover:text-foreground">SSS</Link>
         </nav>
 

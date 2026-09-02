@@ -12,7 +12,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
       <body>
         <div style={{ display: "flex", minHeight: "100dvh", alignItems: "center", justifyContent: "center", padding: "24px", fontFamily: "sans-serif", textAlign: "center" }}>
           <div>
-            <p style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>Kuafi</p>
+            <p style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>Looea</p>
             <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>Bir şeyler ters gitti.</h1>
             <p style={{ color: "#666", marginBottom: 24 }}>Beklenmedik bir hata oluştu. Lütfen tekrar dene.</p>
             <button

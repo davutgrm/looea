@@ -26,7 +26,7 @@ export function AdminMobileNav({ name, email }: { name: string; email: string })
         <div className="flex size-7 items-center justify-center rounded-lg bg-primary text-primary-foreground">
           <Scissors className="size-3.5" />
         </div>
-        <span className="font-heading text-sm font-semibold">Kuafi Admin</span>
+        <span className="font-heading text-sm font-semibold">Looea Admin</span>
       </Link>
 
       <Sheet open={open} onOpenChange={setOpen}>

@@ -8,7 +8,7 @@ export function ProFooter() {
         <div className="grid gap-10 sm:grid-cols-2 md:grid-cols-4">
           <div className="md:col-span-2">
             <div className="font-grotesk flex items-center gap-1.5 text-xl font-bold">
-              Kuafi
+              Looea
               <span className="rounded-md bg-violet-500 px-1.5 py-0.5 text-[11px] font-bold text-white">Pro</span>
             </div>
             <p className="mt-3 max-w-xs text-sm text-white/50">
@@ -23,7 +23,7 @@ export function ProFooter() {
             <Link href="/#sss" className="block text-white/50 hover:text-white">Sıkça Sorulan Sorular</Link>
           </div>
           <div className="space-y-3 text-sm">
-            <p className="font-semibold text-white/90">Kuafi</p>
+            <p className="font-semibold text-white/90">Looea</p>
             <a href={customerHref("/")} className="block text-white/50 hover:text-white">Müşteri Tarafı</a>
             <a href={customerHref("/kesfet")} className="block text-white/50 hover:text-white">Kuaför Bul</a>
             <a href="mailto:destek@kuafi.app" className="block text-white/50 hover:text-white">Destek</a>
@@ -31,7 +31,7 @@ export function ProFooter() {
         </div>
 
         <p className="mt-12 border-t border-white/10 pt-8 text-xs text-white/30">
-          © {new Date().getFullYear()} Kuafi. Tüm hakları saklıdır.
+          © {new Date().getFullYear()} Looea. Tüm hakları saklıdır.
         </p>
       </div>
     </footer>

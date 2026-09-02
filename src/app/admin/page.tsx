@@ -82,7 +82,7 @@ export default async function AdminDashboardPage() {
     <div>
       <PageHeader
         title="Dashboard"
-        description="Kuafi platformunun genel durumuna göz atın."
+        description="Looea platformunun genel durumuna göz atın."
       />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

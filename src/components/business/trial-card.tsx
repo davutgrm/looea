@@ -15,7 +15,7 @@ export function TrialCard({ subscription }: { subscription: SubscriptionSummary 
   if (subscription?.status === "ACTIVE") {
     return (
       <div className="mb-2 rounded-xl border border-border bg-card px-3.5 py-3">
-        <p className="text-sm font-semibold">Kuafi Pro aktif</p>
+        <p className="text-sm font-semibold">Looea Pro aktif</p>
         <p className="mt-0.5 text-xs text-muted-foreground">Üyeliğin sorunsuz devam ediyor.</p>
       </div>
     );
@@ -31,7 +31,7 @@ export function TrialCard({ subscription }: { subscription: SubscriptionSummary 
       <p className="mt-0.5 text-xs text-white/60">
         {trialActive
           ? "Kesintisiz devam etmek için planını seç."
-          : "Kuafi'yi kullanmaya devam etmek için bir plan seç."}
+          : "Looea'yı kullanmaya devam etmek için bir plan seç."}
       </p>
       <Link
         href="/business/uyelik"

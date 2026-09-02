@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Kuafi — Doğru kuaförü bul. Randevunu al.",
+  title: "Looea — Doğru kuaförü bul. Randevunu al.",
   description:
     "Yakınındaki kuaförleri, berberleri ve güzellik salonlarını keşfet, çalışmalarını gör, fiyatları karşılaştır ve saniyeler içinde randevunu oluştur.",
 };

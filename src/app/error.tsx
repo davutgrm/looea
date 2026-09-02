@@ -14,7 +14,7 @@ export default function ErrorPage({ error, reset }: { error: Error & { digest?: 
     <div className={`${spaceGrotesk.variable} flex min-h-dvh items-center justify-center bg-background px-6 py-16`}>
       <div className="flex w-full max-w-md flex-col items-center text-center">
         <Link href="/" className="font-grotesk inline-flex items-center gap-1.5 text-xl font-bold tracking-tight">
-          Kuafi
+          Looea
           <span className="size-1.5 rounded-full bg-app-accent" />
         </Link>
 

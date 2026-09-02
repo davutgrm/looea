@@ -1,4 +1,4 @@
-// Kuafi - Prisma schema
+// Looea - Prisma schema
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
@@ -7,7 +7,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 // ---------- Enums ----------

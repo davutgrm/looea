@@ -6,7 +6,7 @@ export function ProHeader() {
     <header className="sticky top-4 z-30 px-4">
       <div className="mx-auto flex h-16 max-w-5xl items-center gap-6 rounded-full border border-black/5 bg-white/90 px-5 shadow-[0_1px_2px_rgba(0,0,0,0.03),0_16px_32px_-16px_rgba(0,0,0,0.15)] backdrop-blur-md dark:border-white/10 dark:bg-neutral-900/90">
         <Link href="/" className="font-grotesk flex items-center gap-1.5 text-xl font-bold tracking-tight">
-          Kuafi
+          Looea
           <span className="rounded-md bg-violet-600 px-1.5 py-0.5 text-[11px] font-bold text-white">Pro</span>
         </Link>
 

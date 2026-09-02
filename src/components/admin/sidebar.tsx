@@ -19,7 +19,7 @@ export function AdminSidebar({ name, email }: { name: string; email: string }) {
           <Scissors className="size-4" />
         </div>
         <div className="min-w-0 leading-tight">
-          <p className="font-heading text-sm font-semibold text-white">Kuafi</p>
+          <p className="font-heading text-sm font-semibold text-white">Looea</p>
           <p className="truncate text-[11px] text-neutral-400">Yönetim Paneli</p>
         </div>
       </div>

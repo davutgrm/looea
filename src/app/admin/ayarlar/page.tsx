@@ -25,7 +25,7 @@ export default async function AdminSettingsPage() {
           <CardContent className="space-y-3 text-sm">
             <div className="flex items-center justify-between border-b border-border pb-3">
               <span className="text-muted-foreground">Platform Adı</span>
-              <span className="font-medium">Kuafi</span>
+              <span className="font-medium">Looea</span>
             </div>
             <div className="flex items-center justify-between border-b border-border pb-3">
               <span className="text-muted-foreground">Aktif Kategori Sayısı</span>

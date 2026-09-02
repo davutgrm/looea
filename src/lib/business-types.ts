@@ -53,7 +53,7 @@ export const REFERRAL_SOURCE_OPTIONS = [
   "Google araması",
   "Instagram / sosyal medya",
   "Bir tanıdığım önerdi",
-  "Kuafi'yi müşteri olarak kullanıyorum",
+  "Looea'yı müşteri olarak kullanıyorum",
   "Diğer",
 ] as const;
 

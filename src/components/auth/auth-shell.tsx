@@ -16,7 +16,7 @@ export function AuthShell({
     <div className={`${spaceGrotesk.variable} flex min-h-dvh items-center justify-center bg-background px-6 py-16`}>
       <div className="w-full max-w-md">
         <Link href="/" className="font-grotesk inline-flex items-center gap-1.5 text-xl font-bold tracking-tight">
-          Kuafi
+          Looea
           <span className="size-1.5 rounded-full bg-app-accent" />
         </Link>
         <h1 className="font-grotesk mt-10 text-3xl font-bold tracking-tight text-balance">{title}</h1>

@@ -50,10 +50,10 @@ const HOW_STEPS = [
 ];
 
 const FAQ = [
-  { q: "Kuafi kullanmak ücretsiz mi?", a: "Müşteriler için Kuafi tamamen ücretsizdir. İşletmeler için tek bir Kuafi Pro planı vardır, ilk ay ücretsizdir." },
+  { q: "Looea kullanmak ücretsiz mi?", a: "Müşteriler için Looea tamamen ücretsizdir. İşletmeler için tek bir Looea Pro planı vardır, ilk ay ücretsizdir." },
   { q: "Randevumu nasıl iptal ederim?", a: "Randevularım sayfasından ilgili randevuyu seçip iptal edebilirsin." },
   { q: "Yorumlar gerçek mi?", a: "Evet. Sadece o işletmeden gerçekten randevu almış ve hizmeti tamamlamış müşteriler yorum yapabilir." },
-  { q: "İşletmemi nasıl kaydederim?", a: "İşletmen için Kuafi Pro tarafından birkaç adımda profilini oluşturabilirsin." },
+  { q: "İşletmemi nasıl kaydederim?", a: "İşletmen için Looea Pro tarafından birkaç adımda profilini oluşturabilirsin." },
 ];
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
@@ -345,7 +345,7 @@ export default async function LandingPage() {
           <Reveal className="text-center">
             <h2 className={`${type.h1} mx-auto max-w-2xl`}>
               Diğerleri defterle çalışır.{" "}
-              <span className="font-instrument text-[0.9em] font-normal text-app-accent italic">Kuafi&apos;de saniyede randevu.</span>
+              <span className="font-instrument text-[0.9em] font-normal text-app-accent italic">Looea&apos;da saniyede randevu.</span>
             </h2>
           </Reveal>
           <Reveal className="mt-10 overflow-hidden rounded-2xl bg-card shadow-e1 ring-1 ring-foreground/[0.06]">
@@ -353,7 +353,7 @@ export default async function LandingPage() {
               <thead>
                 <tr className="border-b border-border">
                   <th className="p-4 text-left font-medium text-muted-foreground"></th>
-                  <th className="font-grotesk p-4 text-center text-base font-bold text-app-accent">Kuafi</th>
+                  <th className="font-grotesk p-4 text-center text-base font-bold text-app-accent">Looea</th>
                   <th className="p-4 text-center font-medium text-muted-foreground">Instagram DM</th>
                   <th className="p-4 text-center font-medium text-muted-foreground">Telefon / Defter</th>
                 </tr>
@@ -382,7 +382,7 @@ export default async function LandingPage() {
             <div>
               <h2 className={type.h3}>İşletme misin?</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Kuafi Pro ile takvimini doldur, yeni müşteriler kazan — ilk ay ücretsiz.
+                Looea Pro ile takvimini doldur, yeni müşteriler kazan — ilk ay ücretsiz.
               </p>
             </div>
             <a href={proHref("/")} className={`${btn.primary} shrink-0`}>

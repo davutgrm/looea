@@ -19,9 +19,21 @@ function err(error: string): ActionResult<never> {
   return { success: false, error };
 }
 
+const SESSION_EXPIRED_ERROR = "Oturumunuzun süresi dolmuş, lütfen tekrar giriş yapın.";
+
+// JWT oturumlar DB'ye tekrar bakmadan güvenilir; kullanıcı silinmiş/DB
+// sıfırlanmışsa session.user.id artık var olmayabilir ve onu FK olarak
+// kullanan create/update çağrıları uncaught hatayla patlar. Session'ı
+// kullanıcı verisi yazan/güncelleyen her action'ın başında çağır.
+async function userStillExists(userId: string): Promise<boolean> {
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true } });
+  return !!user;
+}
+
 export async function toggleFavorite(businessId: string): Promise<ActionResult<{ favorited: boolean }>> {
   const session = await auth();
   if (!session?.user) return err("Favorilere eklemek için giriş yapmalısınız");
+  if (!(await userStillExists(session.user.id))) return err(SESSION_EXPIRED_ERROR);
 
   const existing = await prisma.favorite.findUnique({
     where: { customerId_businessId: { customerId: session.user.id, businessId } },
@@ -51,6 +63,7 @@ export async function createAppointment(
 ): Promise<ActionResult<{ appointmentId: string }>> {
   const session = await auth();
   if (!session?.user) return err("Randevu almak için giriş yapmalısınız");
+  if (!(await userStillExists(session.user.id))) return err(SESSION_EXPIRED_ERROR);
 
   const parsed = createAppointmentSchema.safeParse(input);
   if (!parsed.success) return err("Geçersiz randevu bilgisi");
@@ -140,6 +153,7 @@ const reviewSchema = z.object({
 export async function submitReview(input: z.infer<typeof reviewSchema>): Promise<ActionResult> {
   const session = await auth();
   if (!session?.user) return err("Giriş yapmalısınız");
+  if (!(await userStillExists(session.user.id))) return err(SESSION_EXPIRED_ERROR);
 
   const parsed = reviewSchema.safeParse(input);
   if (!parsed.success) return err("Geçersiz değerlendirme");
@@ -195,6 +209,7 @@ export async function completeOnboarding(
 ): Promise<ActionResult> {
   const session = await auth();
   if (!session?.user) return err("Giriş yapmalısınız");
+  if (!(await userStillExists(session.user.id))) return err(SESSION_EXPIRED_ERROR);
 
   const parsed = completeOnboardingSchema.safeParse(input);
   if (!parsed.success) return err("Geçersiz bilgi");
@@ -227,6 +242,7 @@ export async function updateSegment(
 ): Promise<ActionResult> {
   const session = await auth();
   if (!session?.user) return err("Giriş yapmalısınız");
+  if (!(await userStillExists(session.user.id))) return err(SESSION_EXPIRED_ERROR);
 
   const parsed = updateSegmentSchema.safeParse(input);
   if (!parsed.success) return err("Geçersiz bilgi");
@@ -250,6 +266,7 @@ const updateProfileSchema = z.object({
 export async function updateProfile(input: z.infer<typeof updateProfileSchema>): Promise<ActionResult> {
   const session = await auth();
   if (!session?.user) return err("Giriş yapmalısınız");
+  if (!(await userStillExists(session.user.id))) return err(SESSION_EXPIRED_ERROR);
 
   const parsed = updateProfileSchema.safeParse(input);
   if (!parsed.success) return err("Geçersiz bilgi");

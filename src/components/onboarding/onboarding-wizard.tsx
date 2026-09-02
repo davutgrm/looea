@@ -80,7 +80,7 @@ export function OnboardingWizard({
         toast.error(result.error);
         return;
       }
-      toast.success("Kuafi'ye hoş geldin! Artık kuaför aramaya hazırsın.");
+      toast.success("Looea'ya hoş geldin! Artık kuaför aramaya hazırsın.");
       router.push("/kesfet");
       router.refresh();
     });

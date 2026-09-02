@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const province = findProvinceBySlug(sehir);
   if (!province) return {};
 
-  const title = `${province.name} Kuaför ve Berber Salonları - Online Randevu | Kuafi`;
+  const title = `${province.name} Kuaför ve Berber Salonları - Online Randevu | Looea`;
   const description = `${province.name} genelindeki en iyi kuaför, berber ve güzellik salonlarını keşfet, hizmetleri karşılaştır, saniyeler içinde online randevu al.`;
   return { title, description, alternates: { canonical: `/kuafor/${province.slug}` } };
 }

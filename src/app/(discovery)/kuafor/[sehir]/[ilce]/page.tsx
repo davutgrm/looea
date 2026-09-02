@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const district = findDistrictBySlug(sehir, ilce);
   if (!province || !district) return {};
 
-  const title = `${district.name} Kuaför ve Berber Salonları | ${province.name} - Kuafi`;
+  const title = `${district.name} Kuaför ve Berber Salonları | ${province.name} - Looea`;
   const description = `${district.name}, ${province.name} bölgesindeki kuaför, berber ve güzellik salonlarını keşfet, saniyeler içinde online randevu al.`;
   return { title, description, alternates: { canonical: `/kuafor/${province.slug}/${district.slug}` } };
 }

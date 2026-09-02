@@ -10,6 +10,9 @@ export default defineConfig({
     seed: "tsx prisma/seed.ts",
   },
   datasource: {
-    url: process.env["DATABASE_URL"],
+    // Migrate/introspection need a direct (non-pooled) connection; pgbouncer's
+    // transaction pooling mode doesn't reliably support the DDL Migrate runs.
+    // Runtime queries use DATABASE_URL (pooled) via the adapter in src/lib/prisma.ts instead.
+    url: process.env["DIRECT_URL"],
   },
 });

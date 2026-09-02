@@ -1,9 +1,9 @@
 import "dotenv/config";
 import bcrypt from "bcryptjs";
-import { PrismaLibSql } from "@prisma/adapter-libsql";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
 
-const adapter = new PrismaLibSql({ url: process.env.DATABASE_URL ?? "file:./dev.db" });
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
 const HASH_ROUNDS = 10;
@@ -52,7 +52,7 @@ const CATEGORIES: CategorySeed[] = [
 
 const PLANS = [
   {
-    name: "Kuafi Pro",
+    name: "Looea Pro",
     slug: "kuafi-pro",
     price: 499,
     features: ["Sınırsız randevu", "Komisyon yok", "Taahhüt yok", "İlk ay ücretsiz"],
@@ -96,7 +96,7 @@ const REVIEW_COMMENTS = [
 ];
 
 async function main() {
-  console.log("Seeding Kuafi database...");
+  console.log("Seeding Looea database...");
 
   // --- wipe (dev only) ---
   await prisma.$transaction([
@@ -148,7 +148,7 @@ async function main() {
   // --- admin ---
   await prisma.user.create({
     data: {
-      name: "Kuafi Admin",
+      name: "Looea Admin",
       email: "admin@kuafi.app",
       passwordHash: await hash("Admin123!"),
       role: "ADMIN",

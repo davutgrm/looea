@@ -1,5 +1,5 @@
 /**
- * Kuafi çift-dünya (müşteri / pro) subdomain yardımcıları.
+ * Looea çift-dünya (müşteri / pro) subdomain yardımcıları.
  *
  * TEK kod tabanı, TEK deploy. Müşteri dünyası ana domain'de (`kuafi.com`),
  * işletme dünyası `pro.` subdomain'inde (`pro.kuafi.com`) yaşar. Ayrım host

@@ -26,7 +26,7 @@ const SMALL_FEATURES = [
   { icon: Users, title: "Personel yönetimi", desc: "Her çalışanın mesai ve molalarını tanımla; randevular müsaitliğe göre dağılsın." },
   { icon: Star, title: "Doğrulanmış yorumlar", desc: "Sadece gerçekten hizmet alan müşteriler yorum yapar — güvenin gerçek olur." },
   { icon: Bell, title: "Otomatik hatırlatma", desc: "Müşterilere otomatik randevu hatırlatması; gelmeyen müşteri derdi azalır." },
-  { icon: Sparkles, title: "Vitrin profili", desc: "Çalışmalarını, hizmetlerini ve fiyatlarını sergile; Kuafi yeni müşteri getirsin." },
+  { icon: Sparkles, title: "Vitrin profili", desc: "Çalışmalarını, hizmetlerini ve fiyatlarını sergile; Looea yeni müşteri getirsin." },
 ];
 
 const STEPS = [
@@ -71,7 +71,7 @@ export default function ProLandingPage() {
         />
         <div className={`${layout.container} grid items-center gap-12 py-16 md:grid-cols-[1.05fr_0.95fr] md:py-24`}>
           <div>
-            <Eyebrow>Kuafi Pro</Eyebrow>
+            <Eyebrow>Looea Pro</Eyebrow>
             <h1 className={`${type.display} mt-5`}>
               İşini büyüt,{" "}
               <span className="font-instrument text-[0.9em] font-normal text-app-accent italic">
@@ -81,7 +81,7 @@ export default function ProLandingPage() {
             </h1>
             <p className={`${type.bodyLg} mt-5 max-w-md`}>
               Kuaför, berber ve güzellik salonun için online randevu sistemi. Telefon
-              trafiğini bırak; Kuafi yeni müşterileri sana getirsin.
+              trafiğini bırak; Looea yeni müşterileri sana getirsin.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -234,7 +234,7 @@ export default function ProLandingPage() {
               <span className="font-instrument text-[0.9em] font-normal text-app-accent italic">gizli ücret yok</span>.
             </h2>
             <p className="mt-4 max-w-md text-muted-foreground">
-              Komisyon yok, taahhüt yok. Ayda tek yeni müşteri getirse Kuafi Pro kendini
+              Komisyon yok, taahhüt yok. Ayda tek yeni müşteri getirse Looea Pro kendini
               karşılar. İlk ay tamamen ücretsiz.
             </p>
             <ul className="mt-8 grid max-w-md gap-2.5 sm:grid-cols-2">
@@ -252,7 +252,7 @@ export default function ProLandingPage() {
               <span className="inline-flex items-center gap-1.5 rounded-full bg-app-accent-soft px-3 py-1 text-xs font-semibold text-app-accent-soft-foreground">
                 <Wallet className="size-3.5" /> İlk ay ücretsiz
               </span>
-              <h3 className="font-grotesk mt-4 text-2xl font-bold">Kuafi Pro</h3>
+              <h3 className="font-grotesk mt-4 text-2xl font-bold">Looea Pro</h3>
               <p className="mt-1.5 text-sm text-muted-foreground">Randevularını yönet, yeni müşteri kazan.</p>
               <div className="mt-6 flex items-baseline justify-center gap-1.5">
                 <span className="font-grotesk text-5xl font-bold tracking-tight">
@@ -295,7 +295,7 @@ export default function ProLandingPage() {
         <div className={`${layout.container} flex flex-col items-center gap-6 py-20 text-center md:py-28`}>
           <h2 className={`${type.h1} max-w-2xl`}>
             İşletmeni bugün{" "}
-            <span className="font-instrument text-[0.9em] font-normal text-app-accent italic">Kuafi&apos;ye taşı</span>.
+            <span className="font-instrument text-[0.9em] font-normal text-app-accent italic">Looea&apos;ya taşı</span>.
           </h2>
           <p className="max-w-md text-white/60">
             İlk ay ücretsiz, komisyon yok, taahhüt yok. Kurulum birkaç dakika.

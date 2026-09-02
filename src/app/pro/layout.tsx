@@ -4,7 +4,7 @@ import { ProHeader } from "@/components/pro/pro-header";
 import { ProFooter } from "@/components/pro/pro-footer";
 
 export const metadata: Metadata = {
-  title: "Kuafi Pro — İşini büyüt, takvimini doldur.",
+  title: "Looea Pro — İşini büyüt, takvimini doldur.",
   description:
     "Kuaför, berber ve güzellik salonun için online randevu sistemi. Takvim ve personel yönetimi, doğrulanmış yorumlar, yeni müşteriler. İlk ay ücretsiz.",
 };

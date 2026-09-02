@@ -61,7 +61,7 @@ function BrandHeader() {
       <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-app-accent text-app-accent-foreground">
         <ScissorsLogo className="size-4.5" />
       </div>
-      <span className="font-grotesk text-[15px] font-bold tracking-tight">Kuafi</span>
+      <span className="font-grotesk text-[15px] font-bold tracking-tight">Looea</span>
     </div>
   );
 }
@@ -143,7 +143,7 @@ export function BusinessShell({
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="flex w-72 flex-col p-0">
-              <SheetTitle className="sr-only">Kuafi menü</SheetTitle>
+              <SheetTitle className="sr-only">Looea menü</SheetTitle>
               <BrandHeader />
               <NavList onNavigate={() => setMobileOpen(false)} />
               <div className="border-t border-border p-3">

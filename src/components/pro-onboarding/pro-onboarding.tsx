@@ -94,7 +94,7 @@ const INTRO = [
   {
     icon: TrendingUp,
     title: "Yeni müşteriler kazan",
-    desc: "İşletmen Kuafi'de görünür olsun; doğrulanmış yorumlarla güven kazan, yeni müşteriler sana gelsin.",
+    desc: "İşletmen Looea'da görünür olsun; doğrulanmış yorumlarla güven kazan, yeni müşteriler sana gelsin.",
     mock: <MockProfileCard />,
   },
 ];
@@ -245,7 +245,7 @@ export function ProOnboarding() {
             Hesabın hazır, {firstName}
           </h1>
           <p className="mt-3 max-w-sm text-muted-foreground">
-            {form.businessName} artık Kuafi&apos;de. Panelden hizmetlerini ekle, çalışma
+            {form.businessName} artık Looea&apos;da. Panelden hizmetlerini ekle, çalışma
             saatlerini ayarla ve randevu almaya başla.
           </p>
           <button
@@ -337,7 +337,7 @@ function Shell({
     >
       <header className="mx-auto flex w-full max-w-md items-center gap-4 pt-6">
         <Link href="/" className="font-grotesk flex shrink-0 items-center gap-1.5 text-base font-bold tracking-tight">
-          Kuafi
+          Looea
           <span className="rounded-md bg-app-accent px-1 py-0.5 text-[10px] font-bold text-white">Pro</span>
         </Link>
         <div className="h-1 flex-1 overflow-hidden rounded-full bg-muted">

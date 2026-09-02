@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 
   const canonical = getBusinessPath({ slug: business.slug, city: business.location?.city, district: business.location?.district });
   const cityLabel = business.location ? `${business.location.district}, ${business.location.city}` : "";
-  const title = `${business.name}${cityLabel ? ` - ${cityLabel}` : ""} | Online Randevu - Kuafi`;
+  const title = `${business.name}${cityLabel ? ` - ${cityLabel}` : ""} | Online Randevu - Looea`;
   const description =
     business.description?.slice(0, 155) ??
     `${business.name}${cityLabel ? ` (${cityLabel})` : ""} hizmetlerini incele, fiyatları gör, saniyeler içinde online randevu al.`;

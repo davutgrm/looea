@@ -43,7 +43,7 @@ export function AppSidebar({
   return (
     <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r bg-sidebar px-3 py-5 md:flex">
       <Link href="/kesfet" className="px-3 text-2xl font-bold tracking-tight text-app-accent">
-        Kuafi
+        Looea
       </Link>
 
       <nav className="mt-8 flex flex-col gap-2">

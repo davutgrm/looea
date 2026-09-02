@@ -168,7 +168,7 @@
   --warning-foreground: oklch(0.2 0.04 78);
 }
 
-/* === Kuafi tasarım sistemi — elevation + hareket. Tam sistem: src/lib/design-tokens.ts ===
+/* === Looea tasarım sistemi — elevation + hareket. Tam sistem: src/lib/design-tokens.ts ===
    Yükseltme yalnızca 2 gölge seviyesi (seviye 0 = düz/ring). Hareket tek standart:
    200ms işlemler, ~500ms reveal, hepsi --ease-out-quart. */
 @theme {

@@ -19,7 +19,7 @@ export function SiteFooter() {
         <div className="grid gap-10 sm:grid-cols-2 md:grid-cols-5">
           <div className="md:col-span-2">
             <div className="font-grotesk flex items-center gap-1.5 text-xl font-bold">
-              Kuafi
+              Looea
               <span className="size-1.5 rounded-full bg-violet-500" />
             </div>
             <p className="mt-3 max-w-xs text-sm text-white/50">
@@ -34,13 +34,13 @@ export function SiteFooter() {
           </div>
           <div className="space-y-3 text-sm">
             <p className="font-semibold text-white/90">İşletmeler</p>
-            <a href={proHref("/")} className="block text-white/50 hover:text-white">Kuafi Pro</a>
+            <a href={proHref("/")} className="block text-white/50 hover:text-white">Looea Pro</a>
             <Link href="/isletme-kaydet" className="block text-white/50 hover:text-white">İşletmeni Kaydet</Link>
             <Link href="/giris" className="block text-white/50 hover:text-white">İşletme Girişi</Link>
-            <Link href="/#karsilastirma" className="block text-white/50 hover:text-white">Neden Kuafi?</Link>
+            <Link href="/#karsilastirma" className="block text-white/50 hover:text-white">Neden Looea?</Link>
           </div>
           <div className="space-y-3 text-sm">
-            <p className="font-semibold text-white/90">Kuafi</p>
+            <p className="font-semibold text-white/90">Looea</p>
             <Link href="/#nasil-calisir" className="block text-white/50 hover:text-white">Nasıl Çalışır?</Link>
             <Link href="/#sss" className="block text-white/50 hover:text-white">Sıkça Sorulan Sorular</Link>
           </div>
@@ -58,7 +58,7 @@ export function SiteFooter() {
         </div>
 
         <p className="mt-10 text-xs text-white/30">
-          © {new Date().getFullYear()} Kuafi. Tüm hakları saklıdır.
+          © {new Date().getFullYear()} Looea. Tüm hakları saklıdır.
         </p>
       </div>
     </footer>
