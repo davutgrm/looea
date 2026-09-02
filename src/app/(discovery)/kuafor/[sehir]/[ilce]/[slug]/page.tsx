@@ -28,7 +28,7 @@ import { ReviewCard } from "@/components/customer/review-card";
 import { Price } from "@/components/customer/price";
 import { MapView } from "@/components/map/map-view";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
 type Params = { sehir: string; ilce: string; slug: string };
 

@@ -1,0 +1,7 @@
+# CLI ile lokal deploy edilirse bile .env dosyaları asla pakete dahil olmasın.
+# (Kök neden: next-auth/react.js, NEXTAUTH_URL'i build anında client bundle'a
+# gömüyor — yerel .env buraya sızarsa prod'daki tüm auth çağrıları localhost'a
+# gider. Detay için .env'deki nota bak.)
+.env
+.env.*
+!.env.example

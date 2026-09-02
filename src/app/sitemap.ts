@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getBusinessPath } from "@/lib/business-url";
 import { matchProvince, matchDistrict } from "@/lib/turkey-locations";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const businesses = await prisma.business.findMany({
