@@ -79,22 +79,6 @@ function dateAt(daysFromToday: number): Date {
   return d;
 }
 
-const REVIEW_NAMES = [
-  "Elif Yılmaz", "Zeynep Kaya", "Ayşe Demir", "Fatma Şahin", "Merve Çelik",
-  "Buse Aydın", "Ece Arslan", "Deniz Yıldız", "Cem Öztürk", "Kerem Aksoy",
-];
-
-const REVIEW_COMMENTS = [
-  "Harika bir deneyimdi, kesinlikle tekrar geleceğim!",
-  "Çok profesyonel ve ilgili bir ekip. Sonuçtan çok memnun kaldım.",
-  "Randevu sistemi çok pratik, beklemeden içeri alındım.",
-  "Saçım tam istediğim gibi oldu, teşekkürler.",
-  "Ortam çok temiz ve şık, fiyat/performans gayet iyi.",
-  "Personel çok güler yüzlü, kendimi rahat hissettim.",
-  "Sonuç beklentimin üzerindeydi, herkese tavsiye ederim.",
-  "Zamanında başladı, hiç gecikme olmadı.",
-];
-
 async function main() {
   console.log("Seeding Looea database...");
 
@@ -181,20 +165,6 @@ async function main() {
     },
   });
 
-  const fillerCustomers = await Promise.all(
-    REVIEW_NAMES.map((name, i) =>
-      prisma.user.create({
-        data: {
-          name,
-          email: `musteri${i + 1}@kuafi.app`,
-          passwordHash: "seed-only-no-login",
-          role: "CUSTOMER",
-          onboardingCompleted: true,
-        },
-      }),
-    ),
-  );
-
   type BusinessSeed = {
     ownerEmail: string;
     name: string;
@@ -230,7 +200,7 @@ async function main() {
       lng: 29.0275,
       coverImageUrl: "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?auto=format&fit=crop&w=1200&q=70",
       logoUrl: "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?auto=format&fit=crop&w=200&q=70",
-      verified: true,
+      verified: false,
       planSlug: "kuafi-pro",
       staff: [
         { name: "Ayşe Kurt", title: "Hair Stylist", avatarUrl: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=300&q=70" },
@@ -263,7 +233,7 @@ async function main() {
       lng: 29.0061,
       coverImageUrl: "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=1200&q=70",
       logoUrl: "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=200&q=70",
-      verified: true,
+      verified: false,
       planSlug: "kuafi-pro",
       staff: [
         { name: "Mehmet Can", title: "Barber", avatarUrl: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=300&q=70" },
@@ -326,7 +296,7 @@ async function main() {
       lng: 29.0159,
       coverImageUrl: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=1200&q=70",
       logoUrl: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=200&q=70",
-      verified: true,
+      verified: false,
       planSlug: "kuafi-pro",
       staff: [
         { name: "Selin Acar", title: "Nail Artist", avatarUrl: "https://images.unsplash.com/photo-1595959183082-7b570b7e08e2?auto=format&fit=crop&w=300&q=70" },
@@ -355,7 +325,7 @@ async function main() {
       lng: 28.9773,
       coverImageUrl: "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&w=1200&q=70",
       logoUrl: "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&w=200&q=70",
-      verified: true,
+      verified: false,
       planSlug: "kuafi-pro",
       staff: [
         { name: "Hakan Yıldırım", title: "Usta Berber", avatarUrl: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=300&q=70" },
@@ -476,42 +446,12 @@ async function main() {
       ),
     );
 
-    // --- filler reviews (completed appointments) ---
-    const reviewCount = 5 + Math.floor(Math.random() * 5);
-    let ratingSum = 0;
-    for (let i = 0; i < reviewCount; i++) {
-      const reviewer = fillerCustomers[i % fillerCustomers.length];
-      const service = serviceRecords[i % serviceRecords.length];
-      const staff = staffRecords[i % staffRecords.length];
-      const rating = 4 + (Math.random() > 0.25 ? 1 : 0); // mostly 4-5
-      ratingSum += rating;
-      const appt = await prisma.appointment.create({
-        data: {
-          businessId: business.id,
-          customerId: reviewer.id,
-          serviceId: service.id,
-          staffId: staff.id,
-          date: dateAt(-(10 + i * 4)),
-          startTime: "14:00",
-          endTime: "15:00",
-          price: service.price,
-          status: "COMPLETED",
-        },
-      });
-      await prisma.review.create({
-        data: {
-          businessId: business.id,
-          customerId: reviewer.id,
-          appointmentId: appt.id,
-          rating,
-          comment: REVIEW_COMMENTS[(i + b.name.length) % REVIEW_COMMENTS.length],
-        },
-      });
-    }
-    await prisma.business.update({
-      where: { id: business.id },
-      data: { ratingAvg: Math.round((ratingSum / reviewCount) * 10) / 10, ratingCount: reviewCount },
-    });
+    // Reviews are NOT seeded here on purpose: a review is a claim that a real
+    // person had a real experience, and inventing one (even a "realistic"-
+    // sounding one) would misrepresent the business. ratingAvg/ratingCount
+    // stay at their schema default of 0 so the UI honestly shows the "Yeni"
+    // (no reviews yet) state until an actual customer reviews a completed
+    // appointment via `submitReview`.
 
     // --- demo customer appointments per business ---
     if (b.name === "Studio X") {
@@ -530,7 +470,7 @@ async function main() {
         },
       });
       const pastService = serviceRecords[0];
-      const pastAppt = await prisma.appointment.create({
+      await prisma.appointment.create({
         data: {
           businessId: business.id,
           customerId: customer.id,
@@ -541,15 +481,6 @@ async function main() {
           endTime: "11:45",
           price: pastService.price,
           status: "COMPLETED",
-        },
-      });
-      await prisma.review.create({
-        data: {
-          businessId: business.id,
-          customerId: customer.id,
-          appointmentId: pastAppt.id,
-          rating: 5,
-          comment: "Ayşe hanım harika bir kesim yaptı, çok memnun kaldım!",
         },
       });
       await prisma.favorite.create({ data: { customerId: customer.id, businessId: business.id } });
@@ -574,7 +505,7 @@ async function main() {
 
     if (b.name === "The Hair Room") {
       const service = serviceRecords[0];
-      const pastAppt = await prisma.appointment.create({
+      await prisma.appointment.create({
         data: {
           businessId: business.id,
           customerId: customer.id,
@@ -585,15 +516,6 @@ async function main() {
           endTime: "14:00",
           price: service.price,
           status: "COMPLETED",
-        },
-      });
-      await prisma.review.create({
-        data: {
-          businessId: business.id,
-          customerId: customer.id,
-          appointmentId: pastAppt.id,
-          rating: 4,
-          comment: "Cilt bakımı çok rahatlatıcıydı, teşekkürler.",
         },
       });
       await prisma.favorite.create({ data: { customerId: customer.id, businessId: business.id } });

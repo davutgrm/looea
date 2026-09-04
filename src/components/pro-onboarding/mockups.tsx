@@ -1,4 +1,4 @@
-import { Check, Star, TrendingUp } from "lucide-react";
+import { Check, TrendingUp } from "lucide-react";
 
 /**
  * Tanıtım ekranlarındaki görseller: ürünün kendi arayüzünden sade UI mockup'ları
@@ -55,11 +55,9 @@ export function MockProfileCard() {
           S
         </div>
         <div className="min-w-0">
-          <p className="truncate font-grotesk font-bold">Studio X</p>
+          <p className="truncate font-grotesk font-bold">Örnek Salon</p>
           <div className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
-            <Star className="size-3.5 fill-app-accent text-app-accent" />
-            <span className="font-medium text-foreground">4,9</span>
-            <span>· Kadıköy, İstanbul</span>
+            <span>Kadıköy, İstanbul</span>
           </div>
         </div>
       </div>

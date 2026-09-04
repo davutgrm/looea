@@ -116,7 +116,9 @@ export default async function LandingPage() {
             <dl className="mt-10 flex gap-8">
               {[
                 [`${businessCount}+`, "Kayıtlı işletme"],
-                [avgRating > 0 ? avgRating.toFixed(1).replace(".", ",") : "—", `${reviewCount}+ yorum`],
+                ...(reviewCount > 0
+                  ? [[avgRating.toFixed(1).replace(".", ","), `${reviewCount}+ yorum`]]
+                  : []),
                 ["7/24", "Online randevu"],
               ].map(([v, l]) => (
                 <div key={l}>
@@ -305,8 +307,8 @@ export default async function LandingPage() {
             <Reveal>
               <Eyebrow>Topluluk</Eyebrow>
               <h2 className={`${type.h1} mt-4 max-w-2xl`}>
-                Binlerce müşterinin{" "}
-                <span className="font-instrument text-[0.9em] font-normal text-app-accent italic">güvendiği</span> bir topluluk.
+                Müşterilerin bıraktığı{" "}
+                <span className="font-instrument text-[0.9em] font-normal text-app-accent italic">gerçek</span> yorumlar.
               </h2>
             </Reveal>
             <div className="mt-10 columns-1 gap-5 sm:columns-2 lg:columns-3">

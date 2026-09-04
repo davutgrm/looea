@@ -1,4 +1,4 @@
-import { Star, Check, Scissors, Sparkles, MapPin, BadgeCheck } from "lucide-react";
+import { Check, Scissors, Sparkles, MapPin } from "lucide-react";
 
 /**
  * Landing hero'sunun imza öğesi: ürünün gerçek arayüzünden sade, fotoğrafsız UI
@@ -23,14 +23,8 @@ export function SalonCardMock() {
           S
         </div>
         <div className="min-w-0">
-          <div className="flex items-center gap-1">
-            <p className="font-grotesk truncate font-bold">Studio X</p>
-            <BadgeCheck className="size-4 shrink-0 text-app-accent" />
-          </div>
+          <p className="font-grotesk truncate font-bold">Örnek Salon</p>
           <div className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
-            <Star className="size-3.5 fill-app-accent text-app-accent" />
-            <span className="font-medium text-foreground">4,9</span>
-            <span>· 128</span>
             <span className="inline-flex items-center gap-0.5">
               <MapPin className="size-3" /> Kadıköy
             </span>
