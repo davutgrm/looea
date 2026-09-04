@@ -1,10 +1,12 @@
 "use client";
 
 import { useMemo } from "react";
+import { Scissors } from "lucide-react";
 import { haversineDistanceKm } from "@/lib/maps/distance";
 import type { BusinessCard as BusinessCardData } from "@/lib/data/business";
 import { useLocation } from "./location-provider";
 import { BusinessCard } from "./business-card";
+import { EmptyState } from "./empty-state";
 
 export function BusinessGrid({
   businesses,
@@ -12,12 +14,14 @@ export function BusinessGrid({
   isLoggedIn,
   sortByDistance = true,
   emptyMessage = "Şu an gösterilecek işletme yok.",
+  emptyDescription,
 }: {
   businesses: BusinessCardData[];
   favoriteIds: Set<string>;
   isLoggedIn: boolean;
   sortByDistance?: boolean;
   emptyMessage?: string;
+  emptyDescription?: string;
 }) {
   const { coords } = useLocation();
 
@@ -33,7 +37,14 @@ export function BusinessGrid({
   }, [businesses, coords, sortByDistance]);
 
   if (resolved.length === 0) {
-    return <p className="py-10 text-center text-sm text-muted-foreground">{emptyMessage}</p>;
+    return (
+      <EmptyState
+        icon={Scissors}
+        title={emptyMessage}
+        description={emptyDescription}
+        className="my-4"
+      />
+    );
   }
 
   return (

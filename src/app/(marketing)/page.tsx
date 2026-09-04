@@ -115,7 +115,7 @@ export default async function LandingPage() {
 
             <dl className="mt-10 flex gap-8">
               {[
-                [`${businessCount}+`, "Kayıtlı işletme"],
+                ...(businessCount > 0 ? [[`${businessCount}+`, "Kayıtlı işletme"]] : []),
                 ...(reviewCount > 0
                   ? [[avgRating.toFixed(1).replace(".", ","), `${reviewCount}+ yorum`]]
                   : []),

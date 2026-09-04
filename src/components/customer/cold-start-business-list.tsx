@@ -14,16 +14,19 @@ export function ColdStartBusinessList({
 }) {
   return (
     <section className="space-y-3">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-foreground">Tüm Salonlar</h2>
-        <span className="text-sm text-muted-foreground">{businesses.length} salon</span>
-      </div>
+      {businesses.length > 0 && (
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold text-foreground">Tüm Salonlar</h2>
+          <span className="text-sm text-muted-foreground">{businesses.length} salon</span>
+        </div>
+      )}
       <BusinessGrid
         businesses={businesses}
         favoriteIds={favoriteIds}
         isLoggedIn={isLoggedIn}
         sortByDistance
-        emptyMessage="Henüz salon eklenmedi."
+        emptyMessage="Henüz işletme yok"
+        emptyDescription="İlk işletmeler katıldığında burada listelenecek."
       />
     </section>
   );

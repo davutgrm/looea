@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
-import { List, MapIcon, Navigation } from "lucide-react";
+import { List, MapIcon, Navigation, SearchX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -15,6 +15,7 @@ import { MapView } from "@/components/map/map-view";
 import { BusinessCard } from "@/components/customer/business-card";
 import { MapBottomSheet } from "@/components/customer/map-bottom-sheet";
 import { useLocation } from "@/components/customer/location-provider";
+import { EmptyState } from "@/components/customer/empty-state";
 import { GuestSegmentGate } from "@/components/customer/guest-segment-gate";
 import { GuestSegmentSwitcher } from "@/components/customer/guest-segment-switcher";
 import type { MapBounds } from "@/lib/maps/types";
@@ -239,9 +240,12 @@ export function SearchView({
             <p className="pb-2 text-xs text-muted-foreground">Aranıyor...</p>
           )}
           {displayed.length === 0 ? (
-            <p className="py-10 text-center text-sm text-muted-foreground">
-              Bu kriterlere uygun işletme bulunamadı.
-            </p>
+            <EmptyState
+              icon={SearchX}
+              title="Bu kriterlere uygun işletme bulunamadı"
+              description="Farklı bir konum, kategori veya filtre dene."
+              className="my-4"
+            />
           ) : (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-2 xl:grid-cols-3">
               {displayed.map((b) => (
