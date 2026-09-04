@@ -2,6 +2,7 @@
 
 import bcrypt from "bcryptjs";
 import { z } from "zod";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/slug";
 import { SERVES_FOR_TYPE } from "@/lib/business-types";
@@ -168,5 +169,6 @@ export async function registerBusiness(input: unknown): Promise<ActionResult> {
     },
   });
 
+  revalidatePath("/"); // landing's business count/featured list read from Business
   return { success: true };
 }

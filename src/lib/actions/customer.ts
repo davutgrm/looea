@@ -192,6 +192,7 @@ export async function submitReview(input: z.infer<typeof reviewSchema>): Promise
   });
 
   revalidatePath("/hesabim/randevularim");
+  revalidatePath("/"); // landing hero stats + testimonials read from Review/Business aggregates
   return ok(undefined);
 }
 

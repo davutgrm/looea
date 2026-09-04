@@ -27,6 +27,12 @@ import { Reveal } from "@/components/ui/reveal";
 import { type, layout, btn } from "@/lib/design-tokens";
 import { proHref } from "@/lib/domains";
 
+// Business/review counts and lists are read directly via Prisma (no `fetch`),
+// so this is the page-level ISR knob: falls back to a background refresh at
+// most this often. registerBusiness/submitReview also call revalidatePath("/")
+// for near-instant reflection of the two events that matter most.
+export const revalidate = 180;
+
 const GROUP_ICONS: Record<string, typeof Scissors> = {
   SAC: Scissors,
   GUZELLIK: Sparkles,
