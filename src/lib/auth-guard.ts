@@ -20,3 +20,20 @@ export async function requireBusiness() {
   if (!user.businessId) redirect("/isletme-kaydet");
   return { user, businessId: user.businessId };
 }
+
+/** Ownership guards for the "fetch a record, confirm it belongs to the
+ * caller" check every business/customer action needs before reading or
+ * mutating it — centralized so a call site can't invert the comparison. */
+export function isOwnedByBusiness<T extends { businessId: string }>(
+  record: T | null | undefined,
+  businessId: string,
+): record is T {
+  return !!record && record.businessId === businessId;
+}
+
+export function isOwnedByCustomer<T extends { customerId: string | null }>(
+  record: T | null | undefined,
+  customerId: string,
+): record is T {
+  return !!record && record.customerId === customerId;
+}

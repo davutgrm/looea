@@ -4,7 +4,7 @@ import { randomUUID } from "crypto";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { requireBusiness } from "@/lib/auth-guard";
+import { isOwnedByBusiness, requireBusiness } from "@/lib/auth-guard";
 import { notify } from "@/lib/notifications";
 import { getPaymentProvider } from "@/lib/payments/provider";
 import { getAvailability, mergeAnyStaffSlots } from "@/lib/availability";
@@ -60,7 +60,7 @@ export async function updateAppointmentStatus(
   if (!parsedStatus.success) return fail("Geçersiz randevu durumu");
 
   const appointment = await prisma.appointment.findUnique({ where: { id: appointmentId } });
-  if (!appointment || appointment.businessId !== businessId) {
+  if (!isOwnedByBusiness(appointment, businessId)) {
     return fail("Randevu bulunamadı");
   }
 
@@ -133,7 +133,7 @@ export async function upsertService(input: unknown): Promise<ActionResult<{ id: 
   let serviceId = id;
   if (id) {
     const existing = await prisma.service.findUnique({ where: { id } });
-    if (!existing || existing.businessId !== businessId) return fail("Hizmet bulunamadı");
+    if (!isOwnedByBusiness(existing, businessId)) return fail("Hizmet bulunamadı");
     await prisma.service.update({
       where: { id },
       data: {
@@ -163,7 +163,7 @@ export async function upsertService(input: unknown): Promise<ActionResult<{ id: 
 export async function toggleServiceActive(id: string, active: boolean): Promise<ActionResult> {
   const { businessId } = await requireBusiness();
   const service = await prisma.service.findUnique({ where: { id } });
-  if (!service || service.businessId !== businessId) return fail("Hizmet bulunamadı");
+  if (!isOwnedByBusiness(service, businessId)) return fail("Hizmet bulunamadı");
   await prisma.service.update({ where: { id }, data: { active } });
   revalidatePath("/business/hizmetler");
   return { success: true, data: undefined };
@@ -244,7 +244,7 @@ export async function createManualAppointment(
     if (!customer) return fail("Müşteri bulunamadı");
   } else if (businessCustomerId) {
     const contact = await prisma.businessCustomer.findUnique({ where: { id: businessCustomerId } });
-    if (!contact || contact.businessId !== businessId) return fail("Müşteri bulunamadı");
+    if (!isOwnedByBusiness(contact, businessId)) return fail("Müşteri bulunamadı");
   }
 
   const services = await prisma.service.findMany({
@@ -316,7 +316,7 @@ export async function recordAppointmentPayment(
   if (!parsedMethod.success) return fail("Geçersiz ödeme yöntemi");
 
   const appointment = await prisma.appointment.findUnique({ where: { id: appointmentId } });
-  if (!appointment || appointment.businessId !== businessId) return fail("Randevu bulunamadı");
+  if (!isOwnedByBusiness(appointment, businessId)) return fail("Randevu bulunamadı");
 
   await prisma.appointment.updateMany({
     where: appointment.groupId ? { groupId: appointment.groupId, businessId } : { id: appointmentId },
@@ -359,7 +359,7 @@ export async function upsertStaff(input: unknown): Promise<ActionResult<{ id: st
   let staffId = id;
   if (id) {
     const existing = await prisma.businessStaff.findUnique({ where: { id } });
-    if (!existing || existing.businessId !== businessId) return fail("Çalışan bulunamadı");
+    if (!isOwnedByBusiness(existing, businessId)) return fail("Çalışan bulunamadı");
     await prisma.businessStaff.update({
       where: { id },
       data: {
@@ -389,7 +389,7 @@ export async function upsertStaff(input: unknown): Promise<ActionResult<{ id: st
 export async function toggleStaffActive(id: string, active: boolean): Promise<ActionResult> {
   const { businessId } = await requireBusiness();
   const staff = await prisma.businessStaff.findUnique({ where: { id } });
-  if (!staff || staff.businessId !== businessId) return fail("Çalışan bulunamadı");
+  if (!isOwnedByBusiness(staff, businessId)) return fail("Çalışan bulunamadı");
   await prisma.businessStaff.update({ where: { id }, data: { active } });
   revalidatePath("/business/calisanlar");
   return { success: true, data: undefined };
@@ -410,7 +410,7 @@ export async function setStaffSchedule(staffId: string, blocks: unknown): Promis
   if (!parsed.success) return fail("Geçersiz çalışma saatleri");
 
   const staff = await prisma.businessStaff.findUnique({ where: { id: staffId } });
-  if (!staff || staff.businessId !== businessId) return fail("Çalışan bulunamadı");
+  if (!isOwnedByBusiness(staff, businessId)) return fail("Çalışan bulunamadı");
 
   for (const block of parsed.data) {
     if (block.startTime >= block.endTime) {
@@ -447,7 +447,7 @@ export async function addStaffTimeOff(input: unknown): Promise<ActionResult> {
   if (!parsed.success) return fail(firstIssue(parsed.error));
 
   const staff = await prisma.businessStaff.findUnique({ where: { id: parsed.data.staffId } });
-  if (!staff || staff.businessId !== businessId) return fail("Çalışan bulunamadı");
+  if (!isOwnedByBusiness(staff, businessId)) return fail("Çalışan bulunamadı");
 
   const startDate = new Date(parsed.data.startDate);
   const endDate = new Date(parsed.data.endDate);
@@ -472,7 +472,7 @@ export async function deleteStaffTimeOff(id: string): Promise<ActionResult> {
   const { businessId } = await requireBusiness();
 
   const timeOff = await prisma.staffTimeOff.findUnique({ where: { id }, include: { staff: true } });
-  if (!timeOff || timeOff.staff.businessId !== businessId) return fail("Kayıt bulunamadı");
+  if (!timeOff || !isOwnedByBusiness(timeOff.staff, businessId)) return fail("Kayıt bulunamadı");
 
   await prisma.staffTimeOff.delete({ where: { id } });
   revalidatePath("/business/calisanlar");
@@ -506,7 +506,7 @@ export async function createBlockedSlot(input: unknown): Promise<ActionResult<{ 
 
   if (staffId) {
     const staff = await prisma.businessStaff.findUnique({ where: { id: staffId } });
-    if (!staff || staff.businessId !== businessId) return fail("Çalışan bulunamadı");
+    if (!isOwnedByBusiness(staff, businessId)) return fail("Çalışan bulunamadı");
   }
 
   const day = parseDateOnly(date);
@@ -532,7 +532,7 @@ export async function deleteBlockedSlot(id: string): Promise<ActionResult> {
   const { businessId } = await requireBusiness();
 
   const block = await prisma.blockedSlot.findUnique({ where: { id } });
-  if (!block || block.businessId !== businessId) return fail("Kayıt bulunamadı");
+  if (!isOwnedByBusiness(block, businessId)) return fail("Kayıt bulunamadı");
 
   await prisma.blockedSlot.delete({ where: { id } });
   revalidatePath("/business/takvim");
@@ -576,7 +576,7 @@ export async function deletePortfolioImage(id: string): Promise<ActionResult> {
   const { businessId } = await requireBusiness();
 
   const image = await prisma.portfolioImage.findUnique({ where: { id } });
-  if (!image || image.businessId !== businessId) return fail("Görsel bulunamadı");
+  if (!isOwnedByBusiness(image, businessId)) return fail("Görsel bulunamadı");
 
   await prisma.portfolioImage.delete({ where: { id } });
   revalidatePath("/business/portfoy");
@@ -621,7 +621,7 @@ export async function replyToReview(reviewId: string, reply: string): Promise<Ac
   if (!parsedReply.success) return fail(firstIssue(parsedReply.error));
 
   const review = await prisma.review.findUnique({ where: { id: reviewId } });
-  if (!review || review.businessId !== businessId) return fail("Yorum bulunamadı");
+  if (!isOwnedByBusiness(review, businessId)) return fail("Yorum bulunamadı");
 
   await prisma.review.update({ where: { id: reviewId }, data: { ownerReply: parsedReply.data } });
   revalidatePath("/business/yorumlar");

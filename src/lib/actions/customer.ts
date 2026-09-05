@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
+import { isOwnedByCustomer } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
 import { getAvailability } from "@/lib/availability";
 import { notify } from "@/lib/notifications";
@@ -124,7 +125,7 @@ export async function cancelAppointment(appointmentId: string): Promise<ActionRe
     where: { id: appointmentId },
     include: { business: { select: { ownerId: true, name: true } } },
   });
-  if (!appointment || appointment.customerId !== session.user.id) {
+  if (!isOwnedByCustomer(appointment, session.user.id)) {
     return err("Randevu bulunamadı");
   }
   if (appointment.status === "COMPLETED" || appointment.status === "CANCELLED") {
@@ -163,7 +164,7 @@ export async function submitReview(input: z.infer<typeof reviewSchema>): Promise
     where: { id: appointmentId },
     include: { review: true },
   });
-  if (!appointment || appointment.customerId !== session.user.id) return err("Randevu bulunamadı");
+  if (!isOwnedByCustomer(appointment, session.user.id)) return err("Randevu bulunamadı");
   if (appointment.status !== "COMPLETED") return err("Sadece tamamlanmış randevular değerlendirilebilir");
   if (appointment.review) return err("Bu randevu için zaten bir değerlendirme yaptınız");
 
