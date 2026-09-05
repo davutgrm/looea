@@ -9,6 +9,7 @@ import { Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { btn } from "@/lib/design-tokens";
+import { formatRetryAfter } from "@/lib/rate-limit-config";
 
 export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
   const router = useRouter();
@@ -21,7 +22,12 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
     startTransition(async () => {
       const res = await signIn("credentials", { email, password, redirect: false });
       if (res?.error) {
-        toast.error("Email veya şifre hatalı");
+        if (res.code?.startsWith("rate_limited:")) {
+          const seconds = parseInt(res.code.split(":")[1], 10);
+          toast.error(`Çok fazla deneme yaptınız. ${formatRetryAfter(seconds)} sonra tekrar deneyin.`);
+        } else {
+          toast.error("Email veya şifre hatalı");
+        }
         return;
       }
       const session = await getSession();

@@ -6,6 +6,11 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/slug";
 import { SERVES_FOR_TYPE } from "@/lib/business-types";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { formatRetryAfter } from "@/lib/rate-limit-config";
+
+const TOO_MANY_REQUESTS = (retryAfterSeconds: number) =>
+  `Çok fazla istekte bulundunuz. ${formatRetryAfter(retryAfterSeconds)} sonra tekrar deneyin.`;
 
 const registerCustomerSchema = z.object({
   name: z.string().min(2, "İsim en az 2 karakter olmalı"),
@@ -31,6 +36,15 @@ export async function requestPasswordReset(input: unknown): Promise<ActionResult
   if (!parsed.success) {
     return { success: false, error: parsed.error.issues[0]?.message ?? "Geçersiz email" };
   }
+
+  // Checked before the DB lookup and keyed the same way regardless of
+  // whether the account exists, so this can't be used to enumerate emails.
+  const ip = await getClientIp();
+  const ipLimit = await checkRateLimit("passwordReset", `ip:${ip}`);
+  if (!ipLimit.allowed) return { success: false, error: TOO_MANY_REQUESTS(ipLimit.retryAfterSeconds) };
+  const emailLimit = await checkRateLimit("passwordReset", `email:${parsed.data.email.toLowerCase()}`);
+  if (!emailLimit.allowed) return { success: false, error: TOO_MANY_REQUESTS(emailLimit.retryAfterSeconds) };
+
   const user = await prisma.user.findUnique({ where: { email: parsed.data.email } });
   if (user && process.env.NODE_ENV !== "production") {
     // TODO(email): SMTP bağlanınca gerçek sıfırlama linki gönder.
@@ -40,6 +54,10 @@ export async function requestPasswordReset(input: unknown): Promise<ActionResult
 }
 
 export async function registerCustomer(input: unknown): Promise<ActionResult> {
+  const ip = await getClientIp();
+  const ipLimit = await checkRateLimit("registerCustomer", `ip:${ip}`);
+  if (!ipLimit.allowed) return { success: false, error: TOO_MANY_REQUESTS(ipLimit.retryAfterSeconds) };
+
   const parsed = registerCustomerSchema.safeParse(input);
   if (!parsed.success) {
     return { success: false, error: parsed.error.issues[0]?.message ?? "Geçersiz form" };
@@ -85,6 +103,10 @@ const registerBusinessSchema = z.object({
 });
 
 export async function registerBusiness(input: unknown): Promise<ActionResult> {
+  const ip = await getClientIp();
+  const ipLimit = await checkRateLimit("registerBusiness", `ip:${ip}`);
+  if (!ipLimit.allowed) return { success: false, error: TOO_MANY_REQUESTS(ipLimit.retryAfterSeconds) };
+
   const parsed = registerBusinessSchema.safeParse(input);
   if (!parsed.success) {
     return { success: false, error: parsed.error.issues[0]?.message ?? "Geçersiz form" };

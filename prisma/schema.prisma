@@ -477,3 +477,13 @@ model Payment {
 
   @@index([subscriptionId])
 }
+
+/// Fixed-window counter backing src/lib/rate-limit.ts. `key` is
+/// "<limitName>:<ip|email>", e.g. "login:ip:1.2.3.4" or "login:email:a@b.com".
+model RateLimitBucket {
+  key         String   @id
+  count       Int      @default(0)
+  windowStart DateTime @default(now())
+
+  @@index([windowStart])
+}
