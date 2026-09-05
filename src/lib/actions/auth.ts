@@ -1,29 +1,18 @@
 "use server";
 
 import bcrypt from "bcryptjs";
-import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/slug";
 import { SERVES_FOR_TYPE } from "@/lib/business-types";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { formatRetryAfter } from "@/lib/rate-limit-config";
+import { forgotPasswordSchema, registerCustomerSchema, registerBusinessSchema } from "@/lib/validation/auth";
 
 const TOO_MANY_REQUESTS = (retryAfterSeconds: number) =>
   `Çok fazla istekte bulundunuz. ${formatRetryAfter(retryAfterSeconds)} sonra tekrar deneyin.`;
 
-const registerCustomerSchema = z.object({
-  name: z.string().min(2, "İsim en az 2 karakter olmalı"),
-  email: z.string().email("Geçerli bir email girin"),
-  phone: z.string().optional(),
-  password: z.string().min(6, "Şifre en az 6 karakter olmalı"),
-});
-
 export type ActionResult = { success: true } | { success: false; error: string };
-
-const forgotPasswordSchema = z.object({
-  email: z.string().email("Geçerli bir email girin"),
-});
 
 /**
  * Şifre sıfırlama talebi. E-posta gönderimi henüz canlı değil (ödeme sağlayıcısı
@@ -76,31 +65,6 @@ export async function registerCustomer(input: unknown): Promise<ActionResult> {
 
   return { success: true };
 }
-
-const businessTypeEnum = z.enum([
-  "WOMEN_SALON",
-  "MEN_BARBER",
-  "UNISEX_SALON",
-  "BEAUTY_SALON",
-  "NAIL_SALON",
-  "MAKEUP_STUDIO",
-  "OTHER",
-]);
-
-const registerBusinessSchema = z.object({
-  ownerName: z.string().min(2, "İsim en az 2 karakter olmalı"),
-  ownerPhone: z.string().optional(),
-  email: z.string().email("Geçerli bir email girin"),
-  password: z.string().min(6, "Şifre en az 6 karakter olmalı"),
-  businessName: z.string().min(2, "İşletme adı en az 2 karakter olmalı"),
-  businessType: businessTypeEnum,
-  city: z.string().min(2, "Şehir seçin"),
-  district: z.string().min(1, "İlçe seçin"),
-  address: z.string().min(5, "Adres en az 5 karakter olmalı"),
-  latitude: z.number(),
-  longitude: z.number(),
-  referralSource: z.string().optional(),
-});
 
 export async function registerBusiness(input: unknown): Promise<ActionResult> {
   const ip = await getClientIp();

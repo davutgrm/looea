@@ -1,6 +1,5 @@
 "use server";
 
-import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { isOwnedByCustomer } from "@/lib/auth-guard";
@@ -8,6 +7,16 @@ import { prisma } from "@/lib/prisma";
 import { getAvailability } from "@/lib/availability";
 import { notify } from "@/lib/notifications";
 import { parseDateOnly } from "@/lib/date";
+import {
+  toggleFavoriteSchema,
+  createAppointmentSchema,
+  cancelAppointmentSchema,
+  reviewSchema,
+  completeOnboardingSchema,
+  updateSegmentSchema,
+  updateProfileSchema,
+  markNotificationReadSchema,
+} from "@/lib/validation/customer";
 
 export type ActionResult<T = undefined> =
   | { success: true; data: T }
@@ -21,6 +30,7 @@ function err(error: string): ActionResult<never> {
 }
 
 const SESSION_EXPIRED_ERROR = "Oturumunuzun süresi dolmuş, lütfen tekrar giriş yapın.";
+const INVALID_INPUT_ERROR = "Geçersiz form verisi";
 
 // JWT oturumlar DB'ye tekrar bakmadan güvenilir; kullanıcı silinmiş/DB
 // sıfırlanmışsa session.user.id artık var olmayabilir ve onu FK olarak
@@ -36,8 +46,11 @@ export async function toggleFavorite(businessId: string): Promise<ActionResult<{
   if (!session?.user) return err("Favorilere eklemek için giriş yapmalısınız");
   if (!(await userStillExists(session.user.id))) return err(SESSION_EXPIRED_ERROR);
 
+  const parsed = toggleFavoriteSchema.safeParse({ businessId });
+  if (!parsed.success) return err(INVALID_INPUT_ERROR);
+
   const existing = await prisma.favorite.findUnique({
-    where: { customerId_businessId: { customerId: session.user.id, businessId } },
+    where: { customerId_businessId: { customerId: session.user.id, businessId: parsed.data.businessId } },
   });
 
   if (existing) {
@@ -46,21 +59,13 @@ export async function toggleFavorite(businessId: string): Promise<ActionResult<{
     return ok({ favorited: false });
   }
 
-  await prisma.favorite.create({ data: { customerId: session.user.id, businessId } });
+  await prisma.favorite.create({ data: { customerId: session.user.id, businessId: parsed.data.businessId } });
   revalidatePath("/hesabim/favoriler");
   return ok({ favorited: true });
 }
 
-const createAppointmentSchema = z.object({
-  businessId: z.string(),
-  serviceId: z.string(),
-  staffId: z.string().nullable(),
-  date: z.string(), // ISO date (yyyy-mm-dd)
-  time: z.string(), // HH:mm
-});
-
 export async function createAppointment(
-  input: z.infer<typeof createAppointmentSchema>,
+  input: unknown,
 ): Promise<ActionResult<{ appointmentId: string }>> {
   const session = await auth();
   if (!session?.user) return err("Randevu almak için giriş yapmalısınız");
@@ -121,8 +126,11 @@ export async function cancelAppointment(appointmentId: string): Promise<ActionRe
   const session = await auth();
   if (!session?.user) return err("Giriş yapmalısınız");
 
+  const parsed = cancelAppointmentSchema.safeParse({ appointmentId });
+  if (!parsed.success) return err(INVALID_INPUT_ERROR);
+
   const appointment = await prisma.appointment.findUnique({
-    where: { id: appointmentId },
+    where: { id: parsed.data.appointmentId },
     include: { business: { select: { ownerId: true, name: true } } },
   });
   if (!isOwnedByCustomer(appointment, session.user.id)) {
@@ -132,7 +140,7 @@ export async function cancelAppointment(appointmentId: string): Promise<ActionRe
     return err("Bu randevu iptal edilemez");
   }
 
-  await prisma.appointment.update({ where: { id: appointmentId }, data: { status: "CANCELLED" } });
+  await prisma.appointment.update({ where: { id: appointment.id }, data: { status: "CANCELLED" } });
   await notify(
     appointment.business.ownerId,
     "APPOINTMENT_CANCELLED",
@@ -144,14 +152,7 @@ export async function cancelAppointment(appointmentId: string): Promise<ActionRe
   return ok(undefined);
 }
 
-const reviewSchema = z.object({
-  appointmentId: z.string(),
-  rating: z.number().int().min(1).max(5),
-  comment: z.string().max(1000).optional(),
-  photoUrl: z.string().url().optional().or(z.literal("")),
-});
-
-export async function submitReview(input: z.infer<typeof reviewSchema>): Promise<ActionResult> {
+export async function submitReview(input: unknown): Promise<ActionResult> {
   const session = await auth();
   if (!session?.user) return err("Giriş yapmalısınız");
   if (!(await userStillExists(session.user.id))) return err(SESSION_EXPIRED_ERROR);
@@ -197,24 +198,13 @@ export async function submitReview(input: z.infer<typeof reviewSchema>): Promise
   return ok(undefined);
 }
 
-const completeOnboardingSchema = z.object({
-  segment: z.enum(["MALE", "FEMALE"]),
-  birthDate: z.string().min(1),
-  city: z.string().min(1),
-  phone: z.string().min(1),
-  interests: z.array(z.string()).min(1),
-  avatarUrl: z.string().optional(),
-});
-
-export async function completeOnboarding(
-  input: z.infer<typeof completeOnboardingSchema>,
-): Promise<ActionResult> {
+export async function completeOnboarding(input: unknown): Promise<ActionResult> {
   const session = await auth();
   if (!session?.user) return err("Giriş yapmalısınız");
   if (!(await userStillExists(session.user.id))) return err(SESSION_EXPIRED_ERROR);
 
   const parsed = completeOnboardingSchema.safeParse(input);
-  if (!parsed.success) return err("Geçersiz bilgi");
+  if (!parsed.success) return err(parsed.error.issues[0]?.message ?? "Geçersiz bilgi");
   const { segment, birthDate, city, phone, interests, avatarUrl } = parsed.data;
 
   await prisma.user.update({
@@ -235,13 +225,7 @@ export async function completeOnboarding(
   return ok(undefined);
 }
 
-const updateSegmentSchema = z.object({
-  segment: z.enum(["MALE", "FEMALE"]),
-});
-
-export async function updateSegment(
-  input: z.infer<typeof updateSegmentSchema>,
-): Promise<ActionResult> {
+export async function updateSegment(input: unknown): Promise<ActionResult> {
   const session = await auth();
   if (!session?.user) return err("Giriş yapmalısınız");
   if (!(await userStillExists(session.user.id))) return err(SESSION_EXPIRED_ERROR);
@@ -260,18 +244,13 @@ export async function updateSegment(
   return ok(undefined);
 }
 
-const updateProfileSchema = z.object({
-  name: z.string().min(2),
-  phone: z.string().optional(),
-});
-
-export async function updateProfile(input: z.infer<typeof updateProfileSchema>): Promise<ActionResult> {
+export async function updateProfile(input: unknown): Promise<ActionResult> {
   const session = await auth();
   if (!session?.user) return err("Giriş yapmalısınız");
   if (!(await userStillExists(session.user.id))) return err(SESSION_EXPIRED_ERROR);
 
   const parsed = updateProfileSchema.safeParse(input);
-  if (!parsed.success) return err("Geçersiz bilgi");
+  if (!parsed.success) return err(parsed.error.issues[0]?.message ?? "Geçersiz bilgi");
 
   await prisma.user.update({
     where: { id: session.user.id },
@@ -286,8 +265,11 @@ export async function markNotificationRead(notificationId: string): Promise<Acti
   const session = await auth();
   if (!session?.user) return err("Giriş yapmalısınız");
 
+  const parsed = markNotificationReadSchema.safeParse({ notificationId });
+  if (!parsed.success) return err(INVALID_INPUT_ERROR);
+
   await prisma.notification.updateMany({
-    where: { id: notificationId, userId: session.user.id },
+    where: { id: parsed.data.notificationId, userId: session.user.id },
     data: { read: true },
   });
 
