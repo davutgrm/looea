@@ -45,10 +45,10 @@ const PLAN_FEATURES = [
 ];
 
 const FAQ = [
-  { q: "İlk ay gerçekten ücretsiz mi?", a: "Evet. İşletmeni kaydettiğinde ilk ay tamamen ücretsizdir, kart bilgisi olmadan başlayabilirsin." },
-  { q: "Komisyon alıyor musunuz?", a: "Hayır. Randevu başına komisyon yok. Tek bir aylık plan var: 499₺/ay, hepsi bu." },
-  { q: "Kurulum ne kadar sürer?", a: "Birkaç dakika. Profilini oluştur, hizmet ve çalışanlarını ekle, çalışma saatlerini gir — randevu almaya hazırsın." },
-  { q: "İstediğim zaman iptal edebilir miyim?", a: "Evet. Taahhüt yok, istediğin an üyeliğini durdurabilirsin." },
+  { q: "İlk ay gerçekten ücretsiz mi?", a: "Evet. Kayıt olduğunda 30 gün boyunca Looea Pro'nun tüm özelliklerini ücretsiz kullanırsın, kredi kartı bilgisi istenmez. Deneme bitince devam etmek istersen aylık 499₺ ödemeye başlarsın." },
+  { q: "Komisyon alıyor musunuz?", a: "Hayır. Aldığın her randevudan sana ait olan tutarın tamamı sende kalır — Looea randevu başına hiçbir kesinti yapmaz. Tek maliyetin aylık sabit abonelik ücreti." },
+  { q: "Kurulum ne kadar sürer?", a: "Ortalama 5-10 dakika. İşletme bilgilerini, hizmetlerini ve çalışma saatlerini girdikten sonra profilin yayına alınır ve randevu almaya başlayabilirsin." },
+  { q: "İstediğim zaman iptal edebilir miyim?", a: "Evet, herhangi bir taahhüt yok. İstediğin an aboneliğini durdurabilirsin, ek ücret veya ceza uygulanmaz." },
 ];
 
 function Eyebrow({ children }: { children: React.ReactNode }) {

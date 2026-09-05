@@ -57,9 +57,9 @@ const HOW_STEPS = [
 
 const FAQ = [
   { q: "Looea kullanmak ücretsiz mi?", a: "Müşteriler için Looea tamamen ücretsizdir. İşletmeler için tek bir Looea Pro planı vardır, ilk ay ücretsizdir." },
-  { q: "Randevumu nasıl iptal ederim?", a: "Randevularım sayfasından ilgili randevuyu seçip iptal edebilirsin." },
-  { q: "Yorumlar gerçek mi?", a: "Evet. Sadece o işletmeden gerçekten randevu almış ve hizmeti tamamlamış müşteriler yorum yapabilir." },
-  { q: "İşletmemi nasıl kaydederim?", a: "İşletmen için Looea Pro tarafından birkaç adımda profilini oluşturabilirsin." },
+  { q: "Randevumu nasıl iptal ederim?", a: "Randevularım sayfasından ilgili randevunu görüntüleyip tek dokunuşla iptal edebilirsin." },
+  { q: "Yorumlar gerçek mi?", a: "Evet. Sadece o işletmeden gerçekten randevu almış ve hizmeti tamamlamış müşteriler yorum yazabilir. Uydurma veya satın alınmış yorum yok." },
+  { q: "İşletmemi nasıl kaydederim?", a: "Sağ üstteki \"İşletmeler için\" linkinden işletme kaydına geçip birkaç adımda profilini oluşturabilirsin. İlk ay ücretsiz, kredi kartı gerekmez." },
 ];
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
