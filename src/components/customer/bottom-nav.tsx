@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 
 const ITEMS = [
   { href: "/kesfet", label: "Ana Sayfa", icon: Home },
-  { href: "/ara", label: "Ara", icon: Search },
+  { href: "/ara", label: "Keşfet", icon: Search },
   { href: "/hesabim/randevularim", label: "Randevularım", icon: CalendarCheck },
   { href: "/hesabim/favoriler", label: "Favoriler", icon: Heart },
   { href: "/hesabim", label: "Profil", icon: User },

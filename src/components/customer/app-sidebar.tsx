@@ -17,8 +17,8 @@ import { cn } from "@/lib/utils";
 
 const NAV = [
   { href: "/kesfet", label: "Ana Sayfa", icon: Home },
-  { href: "/ara", label: "Keşfet & Harita", icon: MapPin },
-  { href: "/hesabim/randevularim", label: "Randevular", icon: CalendarCheck },
+  { href: "/ara", label: "Keşfet", icon: MapPin },
+  { href: "/hesabim/randevularim", label: "Randevularım", icon: CalendarCheck },
   { href: "/hesabim/favoriler", label: "Favoriler", icon: Heart },
   { href: "/hesabim/yorumlarim", label: "Yorumlarım", icon: MessageSquareText },
   { href: "/hesabim/bildirimler", label: "Bildirimler", icon: Bell },
@@ -55,10 +55,10 @@ export function AppSidebar({
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 rounded-full px-4 py-3 text-base font-semibold transition-colors",
+                "flex items-center gap-3 rounded-full px-4 py-3 text-base transition-colors",
                 active
-                  ? "bg-app-accent text-app-accent-foreground"
-                  : "text-foreground hover:bg-app-accent-soft hover:text-app-accent-soft-foreground",
+                  ? "bg-app-accent font-semibold text-app-accent-foreground"
+                  : "font-medium text-muted-foreground hover:bg-app-accent-soft hover:text-app-accent-soft-foreground",
               )}
             >
               <Icon className="size-5 shrink-0" />

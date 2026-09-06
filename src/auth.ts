@@ -1,5 +1,6 @@
 import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import Google from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { authConfig } from "@/auth.config";
@@ -63,5 +64,65 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         };
       },
     }),
+    // Google ile giriş — yalnızca müşteri tarafı auth ekranlarında gösterilir
+    // (Google ile açılan hesaplar CUSTOMER olur; işletme sahipleri /isletme-kaydet
+    // ile kaydolur). Env yoksa sağlayıcı hiç eklenmez → çalışmayan buton oluşmaz.
+    ...(process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET
+      ? [
+          Google({
+            clientId: process.env.AUTH_GOOGLE_ID,
+            clientSecret: process.env.AUTH_GOOGLE_SECRET,
+          }),
+        ]
+      : []),
   ],
+  callbacks: {
+    ...authConfig.callbacks,
+    // Google ilk girişinde: e-postaya göre kullanıcıyı bul, yoksa CUSTOMER olarak
+    // oluştur. passwordHash rastgele/kullanılamaz bir değer alır (bu hesap yalnızca
+    // Google ile açılır) — veri modeli değişmeden zorunlu alan doldurulur. Aynı
+    // e-posta credentials ile kayıtlıysa parolaya dokunulmadan hesaba bağlanır.
+    async signIn({ user, account }) {
+      if (account?.provider !== "google") return true;
+      const email = user.email?.toLowerCase();
+      if (!email) return false;
+
+      const existing = await prisma.user.findUnique({ where: { email } });
+      if (existing) return existing.active;
+
+      await prisma.user.create({
+        data: {
+          email,
+          name: user.name?.trim() || email.split("@")[0],
+          passwordHash: await bcrypt.hash(crypto.randomUUID(), 10),
+          avatarUrl: user.image ?? null,
+          role: "CUSTOMER",
+          onboardingCompleted: false,
+        },
+      });
+      return true;
+    },
+    async jwt({ token, user, account }) {
+      // Credentials: authorize() DB alanlarını user'a koydu.
+      if (user && account?.provider !== "google") {
+        token.id = user.id;
+        token.role = user.role;
+        token.businessId = user.businessId ?? null;
+        return token;
+      }
+      // Google: ilk girişte DB kullanıcısını e-postayla bul, kimlik/rolü yükle.
+      if (account?.provider === "google" && user?.email) {
+        const dbUser = await prisma.user.findUnique({
+          where: { email: user.email.toLowerCase() },
+          include: { business: { select: { id: true } } },
+        });
+        if (dbUser) {
+          token.id = dbUser.id;
+          token.role = dbUser.role;
+          token.businessId = dbUser.business?.id ?? null;
+        }
+      }
+      return token;
+    },
+  },
 });

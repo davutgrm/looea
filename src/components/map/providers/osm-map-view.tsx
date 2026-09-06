@@ -85,6 +85,7 @@ export default function OsmMapView({
   onMarkerClick,
   onBoundsChange,
   className,
+  cooperativeGestures = false,
 }: MapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -113,6 +114,8 @@ export default function OsmMapView({
       center: [center.lng, center.lat],
       zoom,
       attributionControl: { compact: true },
+      // Gömülü haritalarda tek-parmak sayfa kaydırmasını serbest bırak (mobil).
+      cooperativeGestures,
     });
     mapRef.current = map;
 

@@ -2,11 +2,15 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { RegisterCustomerForm } from "@/components/auth/register-customer-form";
+import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
+import { AuthDivider } from "@/components/auth/auth-divider";
 import { isProRequest } from "@/lib/host";
 
 export default async function RegisterPage() {
   // Pro host'ta müşteri kaydı yok — işletme kaydına yönlendir.
   if (await isProRequest()) redirect("/isletme-kaydet");
+
+  const googleEnabled = !!process.env.AUTH_GOOGLE_ID && !!process.env.AUTH_GOOGLE_SECRET;
 
   return (
     <AuthShell
@@ -19,6 +23,12 @@ export default async function RegisterPage() {
       }
     >
       <RegisterCustomerForm />
+      {googleEnabled && (
+        <>
+          <AuthDivider />
+          <GoogleSignInButton callbackUrl="/kesfet" label="Google ile devam et" />
+        </>
+      )}
     </AuthShell>
   );
 }

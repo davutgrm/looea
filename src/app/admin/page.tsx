@@ -81,7 +81,7 @@ export default async function AdminDashboardPage() {
   return (
     <div>
       <PageHeader
-        title="Dashboard"
+        title="Genel Bakış"
         description="Looea platformunun genel durumuna göz atın."
       />
 

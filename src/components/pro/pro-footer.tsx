@@ -9,7 +9,7 @@ export function ProFooter() {
           <div className="md:col-span-2">
             <div className="font-grotesk flex items-center gap-1.5 text-xl font-bold">
               Looea
-              <span className="rounded-md bg-violet-500 px-1.5 py-0.5 text-[11px] font-bold text-white">Pro</span>
+              <span className="rounded-md bg-violet-600 px-1.5 py-0.5 text-[11px] font-bold text-white">Pro</span>
             </div>
             <p className="mt-3 max-w-xs text-sm text-white/50">
               İşletmen için <span className="font-instrument text-[0.88em] text-violet-400 italic">online randevu</span> sistemi — takvimini doldur, müşterini büyüt.

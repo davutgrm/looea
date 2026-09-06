@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { LoginForm } from "@/components/auth/login-form";
+import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
+import { AuthDivider } from "@/components/auth/auth-divider";
 import { isProRequest } from "@/lib/host";
 import { proHref } from "@/lib/domains";
 
@@ -10,6 +12,7 @@ export default async function LoginPage({
   searchParams: Promise<{ callbackUrl?: string }>;
 }) {
   const [{ callbackUrl }, pro] = await Promise.all([searchParams, isProRequest()]);
+  const googleEnabled = !!process.env.AUTH_GOOGLE_ID && !!process.env.AUTH_GOOGLE_SECRET;
 
   return (
     <AuthShell
@@ -34,6 +37,12 @@ export default async function LoginPage({
       }
     >
       <LoginForm callbackUrl={callbackUrl} />
+      {!pro && googleEnabled && (
+        <>
+          <AuthDivider />
+          <GoogleSignInButton callbackUrl={callbackUrl ?? "/kesfet"} label="Google ile giriş yap" />
+        </>
+      )}
     </AuthShell>
   );
 }

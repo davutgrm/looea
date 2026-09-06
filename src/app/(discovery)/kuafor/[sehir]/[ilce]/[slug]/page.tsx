@@ -251,6 +251,7 @@ export default async function BusinessProfilePage({ params }: { params: Promise<
                       },
                     ]}
                     className="h-56 w-full"
+                    cooperativeGestures
                   />
                   <Button variant="accent" size="sm" className="absolute bottom-3 right-3 z-[1000] shadow-lg" asChild>
                     <a

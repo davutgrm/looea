@@ -2,7 +2,8 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Trash2, ArrowUp, ArrowDown, ImageOff, Images, Upload } from "lucide-react";
+import { Loader2, Trash2, ArrowUp, ArrowDown, ImageOff, Images, UploadCloud } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,16 +33,19 @@ export function PortfolioManager({
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [categoryId, setCategoryId] = useState<string>("NONE");
+  const [error, setError] = useState<string | null>(null);
+  const [dragging, setDragging] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   function handleFileSelected(file: File | undefined) {
     if (!file) return;
+    setError(null);
     if (!file.type.startsWith("image/")) {
-      toast.error("Lütfen bir resim dosyası seç");
+      setError("Lütfen bir resim dosyası seç (JPG, PNG veya WEBP).");
       return;
     }
     if (file.size > MAX_CLIENT_BYTES) {
-      toast.error("Görsel en fazla 5MB olabilir");
+      setError("Görsel çok büyük — en fazla 5MB olabilir.");
       return;
     }
 
@@ -57,10 +61,26 @@ export function PortfolioManager({
         if (inputRef.current) inputRef.current.value = "";
         router.refresh();
       } else {
-        toast.error(result.error);
+        setError(result.error);
       }
     });
   }
+
+  const dropHandlers = {
+    onDragOver: (e: React.DragEvent) => {
+      e.preventDefault();
+      if (!isPending) setDragging(true);
+    },
+    onDragLeave: (e: React.DragEvent) => {
+      e.preventDefault();
+      setDragging(false);
+    },
+    onDrop: (e: React.DragEvent) => {
+      e.preventDefault();
+      setDragging(false);
+      if (!isPending) handleFileSelected(e.dataTransfer.files?.[0]);
+    },
+  };
 
   function handleDelete(id: string) {
     startTransition(async () => {
@@ -92,8 +112,8 @@ export function PortfolioManager({
           <CardTitle>Yeni Görsel Ekle</CardTitle>
           <CardDescription>Bilgisayarından bir fotoğraf seç (JPG, PNG veya WEBP, en fazla 5MB).</CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-end">
-          <div className="flex w-full flex-col gap-1.5 sm:w-52">
+        <CardContent className="flex flex-col gap-3">
+          <div className="flex w-full flex-col gap-1.5 sm:max-w-52">
             <Label>Kategori (opsiyonel)</Label>
             <Select value={categoryId} onValueChange={setCategoryId} disabled={isPending}>
               <SelectTrigger className="w-full">
@@ -109,10 +129,48 @@ export function PortfolioManager({
               </SelectContent>
             </Select>
           </div>
-          <Button type="button" variant="accent" onClick={() => inputRef.current?.click()} disabled={isPending}>
-            {isPending ? <Loader2 className="animate-spin" /> : <Upload />}
-            Görsel Seç
-          </Button>
+
+          <div
+            {...dropHandlers}
+            onClick={() => !isPending && inputRef.current?.click()}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if ((e.key === "Enter" || e.key === " ") && !isPending) {
+                e.preventDefault();
+                inputRef.current?.click();
+              }
+            }}
+            aria-label="Portföy görseli yükle"
+            className={cn(
+              "relative flex min-h-40 cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed px-6 py-8 text-center transition-colors duration-200 ease-[var(--ease-out-quart)] outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent",
+              dragging ? "border-app-accent bg-app-accent-soft/60" : "border-border bg-muted/50 hover:border-app-accent/70 hover:bg-muted",
+              error && "border-destructive/60",
+              isPending && "pointer-events-none",
+            )}
+          >
+            {isPending ? (
+              <>
+                <Loader2 className="size-7 animate-spin text-app-accent" />
+                <span className="text-sm font-medium text-app-accent">Yükleniyor…</span>
+              </>
+            ) : (
+              <>
+                <span className="flex size-12 items-center justify-center rounded-full bg-app-accent-soft text-app-accent-soft-foreground">
+                  <UploadCloud className="size-6" />
+                </span>
+                <span className="text-sm font-semibold text-foreground">
+                  Görseli buraya sürükle ya da <span className="text-app-accent">seç</span>
+                </span>
+                <span className="text-xs text-muted-foreground">JPG, PNG veya WEBP · en fazla 5MB</span>
+              </>
+            )}
+          </div>
+          {error && (
+            <p role="alert" className="text-xs font-medium text-destructive">
+              {error}
+            </p>
+          )}
           <input
             ref={inputRef}
             type="file"
