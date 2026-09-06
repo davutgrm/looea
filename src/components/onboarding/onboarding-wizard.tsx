@@ -23,7 +23,7 @@ type FormState = {
   city: string;
   phone: string;
   interests: string[];
-  avatarDataUrl: string | null;
+  avatarUrl: string | null;
 };
 
 const INITIAL_STATE: FormState = {
@@ -32,7 +32,7 @@ const INITIAL_STATE: FormState = {
   city: "",
   phone: "",
   interests: [],
-  avatarDataUrl: null,
+  avatarUrl: null,
 };
 
 export function OnboardingWizard({
@@ -88,7 +88,7 @@ export function OnboardingWizard({
 
   function goNext() {
     if (step === TOTAL_STEPS) {
-      finish(data.avatarDataUrl ?? undefined);
+      finish(data.avatarUrl ?? undefined);
       return;
     }
     setStep((s) => s + 1);
@@ -184,13 +184,13 @@ export function OnboardingWizard({
       {...nav}
       title="Profil fotoğrafı ekle"
       subtitle="Kuaförler seni daha kolay tanısın — istersen sonra da ekleyebilirsin."
-      canContinue={!!data.avatarDataUrl}
+      canContinue={!!data.avatarUrl}
       onContinue={goNext}
       continuePending={isPending}
       skipLabel="Bu adımı atla"
       onSkip={() => finish(undefined)}
     >
-      <PhotoStep value={data.avatarDataUrl} onChange={(avatarDataUrl) => setData((d) => ({ ...d, avatarDataUrl }))} />
+      <PhotoStep value={data.avatarUrl} onChange={(avatarUrl) => setData((d) => ({ ...d, avatarUrl }))} />
     </OnboardingShell>
   );
 }

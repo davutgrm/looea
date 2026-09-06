@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -13,7 +14,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { BUSINESS_SERVES_LABELS } from "@/lib/business-types";
-import { updateBusinessProfile } from "@/lib/actions/business";
+import { updateBusinessProfile, uploadBusinessCover, uploadBusinessLogo } from "@/lib/actions/business";
+import { ImageUploadField } from "@/components/business/image-upload-field";
 
 const SERVES_OPTIONS = [
   { value: "MEN" as const, icon: Scissors },
@@ -24,8 +26,6 @@ const SERVES_OPTIONS = [
 const formSchema = z.object({
   name: z.string().min(2, "İşletme adı en az 2 karakter olmalı"),
   description: z.string().optional(),
-  logoUrl: z.string().optional(),
-  coverImageUrl: z.string().optional(),
   phone: z.string().optional(),
   email: z.string().optional(),
   instagram: z.string().optional(),
@@ -34,11 +34,14 @@ const formSchema = z.object({
 });
 
 type FormValues = z.infer<typeof formSchema>;
+type ProfileFormInitialValues = FormValues & { logoUrl: string; coverImageUrl: string };
 
-export function ProfileForm({ initialValues }: { initialValues: FormValues }) {
+export function ProfileForm({ initialValues }: { initialValues: ProfileFormInitialValues }) {
   const router = useRouter();
   const form = useForm<FormValues>({ resolver: zodResolver(formSchema), defaultValues: initialValues });
   const serves = form.watch("serves");
+  const [logoUrl, setLogoUrl] = useState<string | null>(initialValues.logoUrl || null);
+  const [coverImageUrl, setCoverImageUrl] = useState<string | null>(initialValues.coverImageUrl || null);
 
   async function onSubmit(values: FormValues) {
     const result = await updateBusinessProfile(values);
@@ -93,15 +96,9 @@ export function ProfileForm({ initialValues }: { initialValues: FormValues }) {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="business-logo">Logo URL</Label>
-              <Input id="business-logo" {...form.register("logoUrl")} placeholder="https://..." />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="business-cover">Kapak Görseli URL</Label>
-              <Input id="business-cover" {...form.register("coverImageUrl")} placeholder="https://..." />
-            </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-[auto_1fr]">
+            <ImageUploadField label="Logo" value={logoUrl} onUploaded={setLogoUrl} upload={uploadBusinessLogo} shape="circle" />
+            <ImageUploadField label="Kapak Görseli" value={coverImageUrl} onUploaded={setCoverImageUrl} upload={uploadBusinessCover} shape="banner" />
           </div>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

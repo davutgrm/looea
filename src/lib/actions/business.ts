@@ -9,6 +9,8 @@ import { getPaymentProvider } from "@/lib/payments/provider";
 import { getAvailability, mergeAnyStaffSlots } from "@/lib/availability";
 import { parseDateOnly } from "@/lib/date";
 import { getBusinessPath } from "@/lib/business-url";
+import { BUCKETS, deleteImageFromStorage, uploadImageToStorage, validateImageFile } from "@/lib/image-upload";
+import { optionalIdField } from "@/lib/validation/common";
 import {
   updateAppointmentStatusSchema,
   recordAppointmentPaymentSchema,
@@ -23,7 +25,6 @@ import {
   deleteStaffTimeOffSchema,
   createBlockedSlotSchema,
   deleteBlockedSlotSchema,
-  addPortfolioImageSchema,
   deletePortfolioImageSchema,
   movePortfolioImageSchema,
   replyToReviewSchema,
@@ -489,28 +490,40 @@ export async function deleteBlockedSlot(id: string): Promise<ActionResult> {
 // Portfolio
 // ---------------------------------------------------------------------------
 
-export async function addPortfolioImage(input: unknown): Promise<ActionResult> {
+export async function uploadPortfolioImage(formData: FormData): Promise<ActionResult<{ id: string; url: string }>> {
   const { businessId } = await requireBusiness();
 
-  const parsed = addPortfolioImageSchema.safeParse(input);
-  if (!parsed.success) return fail(firstIssue(parsed.error));
+  const file = formData.get("file");
+  if (!(file instanceof File)) return fail("Dosya bulunamadı");
+
+  const categoryIdParsed = optionalIdField.safeParse(formData.get("categoryId"));
+  if (!categoryIdParsed.success) return fail("Geçersiz kategori");
+
+  const validated = await validateImageFile(file);
+  if (!validated.ok) return fail(validated.error);
+
+  const url = await uploadImageToStorage({
+    bucket: BUCKETS.BUSINESS_PHOTOS,
+    folder: `${businessId}/portfolio`,
+    image: validated.value,
+  });
 
   const maxOrder = await prisma.portfolioImage.aggregate({
     where: { businessId },
     _max: { order: true },
   });
 
-  await prisma.portfolioImage.create({
+  const created = await prisma.portfolioImage.create({
     data: {
       businessId,
-      imageUrl: parsed.data.imageUrl,
-      categoryId: parsed.data.categoryId || null,
+      imageUrl: url,
+      categoryId: categoryIdParsed.data || null,
       order: (maxOrder._max.order ?? -1) + 1,
     },
   });
 
   revalidatePath("/business/portfoy");
-  return { success: true, data: undefined };
+  return { success: true, data: { id: created.id, url } };
 }
 
 export async function deletePortfolioImage(id: string): Promise<ActionResult> {
@@ -523,6 +536,7 @@ export async function deletePortfolioImage(id: string): Promise<ActionResult> {
   if (!isOwnedByBusiness(image, businessId)) return fail("Görsel bulunamadı");
 
   await prisma.portfolioImage.delete({ where: { id: image.id } });
+  await deleteImageFromStorage(image.imageUrl);
   revalidatePath("/business/portfoy");
   return { success: true, data: undefined };
 }
@@ -640,15 +654,13 @@ export async function updateBusinessProfile(input: unknown): Promise<ActionResul
   const parsed = businessProfileSchema.safeParse(input);
   if (!parsed.success) return fail(firstIssue(parsed.error));
 
-  const { name, description, logoUrl, coverImageUrl, phone, email, instagram, website, serves } = parsed.data;
+  const { name, description, phone, email, instagram, website, serves } = parsed.data;
 
   await prisma.business.update({
     where: { id: businessId },
     data: {
       name,
       description: description || null,
-      logoUrl: logoUrl || null,
-      coverImageUrl: coverImageUrl || null,
       phone: phone || null,
       email: email || null,
       instagram: instagram || null,
@@ -662,6 +674,52 @@ export async function updateBusinessProfile(input: unknown): Promise<ActionResul
   revalidatePath("/kesfet");
   revalidatePath("/ara");
   return { success: true, data: undefined };
+}
+
+async function uploadBusinessImage(
+  formData: FormData,
+  folder: "logo" | "cover",
+): Promise<ActionResult<{ url: string }>> {
+  const { businessId } = await requireBusiness();
+
+  const file = formData.get("file");
+  if (!(file instanceof File)) return fail("Dosya bulunamadı");
+
+  const validated = await validateImageFile(file);
+  if (!validated.ok) return fail(validated.error);
+
+  const existing = await prisma.business.findUniqueOrThrow({
+    where: { id: businessId },
+    select: { logoUrl: true, coverImageUrl: true },
+  });
+
+  const url = await uploadImageToStorage({
+    bucket: BUCKETS.BUSINESS_PHOTOS,
+    folder: `${businessId}/${folder}`,
+    image: validated.value,
+  });
+
+  if (folder === "logo") {
+    await prisma.business.update({ where: { id: businessId }, data: { logoUrl: url } });
+    await deleteImageFromStorage(existing.logoUrl);
+  } else {
+    await prisma.business.update({ where: { id: businessId }, data: { coverImageUrl: url } });
+    await deleteImageFromStorage(existing.coverImageUrl);
+  }
+
+  revalidatePath("/business/ayarlar");
+  revalidatePath("/business");
+  revalidatePath("/kesfet");
+  revalidatePath("/ara");
+  return { success: true, data: { url } };
+}
+
+export async function uploadBusinessLogo(formData: FormData): Promise<ActionResult<{ url: string }>> {
+  return uploadBusinessImage(formData, "logo");
+}
+
+export async function uploadBusinessCover(formData: FormData): Promise<ActionResult<{ url: string }>> {
+  return uploadBusinessImage(formData, "cover");
 }
 
 export async function updateBusinessLocation(input: unknown): Promise<ActionResult> {

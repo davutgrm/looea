@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { getAvailability } from "@/lib/availability";
 import { notify } from "@/lib/notifications";
 import { parseDateOnly } from "@/lib/date";
+import { BUCKETS, deleteImageFromStorage, uploadImageToStorage, validateImageFile } from "@/lib/image-upload";
 import {
   toggleFavoriteSchema,
   createAppointmentSchema,
@@ -223,6 +224,33 @@ export async function completeOnboarding(input: unknown): Promise<ActionResult> 
   revalidatePath("/kesfet");
   revalidatePath("/hesabim");
   return ok(undefined);
+}
+
+export async function uploadAvatar(formData: FormData): Promise<ActionResult<{ url: string }>> {
+  const session = await auth();
+  if (!session?.user) return err("Giriş yapmalısınız");
+  if (!(await userStillExists(session.user.id))) return err(SESSION_EXPIRED_ERROR);
+
+  const file = formData.get("file");
+  if (!(file instanceof File)) return err("Dosya bulunamadı");
+
+  const validated = await validateImageFile(file);
+  if (!validated.ok) return err(validated.error);
+
+  const existing = await prisma.user.findUnique({ where: { id: session.user.id }, select: { avatarUrl: true } });
+
+  const url = await uploadImageToStorage({
+    bucket: BUCKETS.AVATARS,
+    folder: session.user.id,
+    image: validated.value,
+  });
+
+  await prisma.user.update({ where: { id: session.user.id }, data: { avatarUrl: url } });
+  await deleteImageFromStorage(existing?.avatarUrl);
+
+  revalidatePath("/kesfet");
+  revalidatePath("/hesabim");
+  return ok({ url });
 }
 
 export async function updateSegment(input: unknown): Promise<ActionResult> {

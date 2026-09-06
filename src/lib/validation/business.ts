@@ -4,7 +4,6 @@ import {
   optionalText,
   optionalEmailField,
   optionalUrlField,
-  urlField,
   phoneField,
   optionalPhoneField,
   latitudeField,
@@ -122,10 +121,6 @@ export const createBlockedSlotSchema = z
 
 export const deleteBlockedSlotSchema = z.object({ id: idField });
 
-export const addPortfolioImageSchema = z.object({
-  imageUrl: urlField,
-  categoryId: optionalIdField,
-});
 export const deletePortfolioImageSchema = z.object({ id: idField });
 export const movePortfolioImageSchema = z.object({ id: idField, direction: sortDirectionEnum });
 
@@ -144,8 +139,6 @@ export const setAvailableNowSchema = z.object({
 export const businessProfileSchema = z.object({
   name: text(2, 150, "İşletme adı en az 2 karakter olmalı"),
   description: optionalText(3000),
-  logoUrl: optionalUrlField,
-  coverImageUrl: optionalUrlField,
   phone: optionalPhoneField,
   email: optionalEmailField,
   instagram: optionalText(100),

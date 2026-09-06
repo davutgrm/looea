@@ -1,17 +1,18 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, ArrowUp, ArrowDown, ImageOff, Images } from "lucide-react";
+import { Loader2, Trash2, ArrowUp, ArrowDown, ImageOff, Images, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { EmptyState } from "@/components/business/empty-state";
-import { addPortfolioImage, deletePortfolioImage, movePortfolioImage } from "@/lib/actions/business";
+import { uploadPortfolioImage, deletePortfolioImage, movePortfolioImage } from "@/lib/actions/business";
+
+const MAX_CLIENT_BYTES = 5 * 1024 * 1024;
 
 export type PortfolioRow = {
   id: string;
@@ -29,24 +30,31 @@ export function PortfolioManager({
   categories: { id: string; name: string }[];
 }) {
   const router = useRouter();
-  const [imageUrl, setImageUrl] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
   const [categoryId, setCategoryId] = useState<string>("NONE");
   const [isPending, startTransition] = useTransition();
 
-  function handleAdd() {
-    if (!imageUrl.trim()) {
-      toast.error("Görsel URL'si gerekli");
+  function handleFileSelected(file: File | undefined) {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Lütfen bir resim dosyası seç");
       return;
     }
+    if (file.size > MAX_CLIENT_BYTES) {
+      toast.error("Görsel en fazla 5MB olabilir");
+      return;
+    }
+
     startTransition(async () => {
-      const result = await addPortfolioImage({
-        imageUrl: imageUrl.trim(),
-        categoryId: categoryId === "NONE" ? undefined : categoryId,
-      });
+      const formData = new FormData();
+      formData.append("file", file);
+      if (categoryId !== "NONE") formData.append("categoryId", categoryId);
+
+      const result = await uploadPortfolioImage(formData);
       if (result.success) {
         toast.success("Görsel eklendi");
-        setImageUrl("");
         setCategoryId("NONE");
+        if (inputRef.current) inputRef.current.value = "";
         router.refresh();
       } else {
         toast.error(result.error);
@@ -82,21 +90,12 @@ export function PortfolioManager({
       <Card>
         <CardHeader>
           <CardTitle>Yeni Görsel Ekle</CardTitle>
-          <CardDescription>Görselin URL adresini girin (dosya yükleme henüz desteklenmiyor).</CardDescription>
+          <CardDescription>Bilgisayarından bir fotoğraf seç (JPG, PNG veya WEBP, en fazla 5MB).</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-end">
-          <div className="flex flex-1 flex-col gap-1.5">
-            <Label htmlFor="portfolio-url">Görsel URL</Label>
-            <Input
-              id="portfolio-url"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://..."
-            />
-          </div>
           <div className="flex w-full flex-col gap-1.5 sm:w-52">
             <Label>Kategori (opsiyonel)</Label>
-            <Select value={categoryId} onValueChange={setCategoryId}>
+            <Select value={categoryId} onValueChange={setCategoryId} disabled={isPending}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Kategori seçin" />
               </SelectTrigger>
@@ -110,9 +109,17 @@ export function PortfolioManager({
               </SelectContent>
             </Select>
           </div>
-          <Button type="button" variant="accent" onClick={handleAdd} disabled={isPending}>
-            <Plus /> Ekle
+          <Button type="button" variant="accent" onClick={() => inputRef.current?.click()} disabled={isPending}>
+            {isPending ? <Loader2 className="animate-spin" /> : <Upload />}
+            Görsel Seç
           </Button>
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="hidden"
+            onChange={(e) => handleFileSelected(e.target.files?.[0])}
+          />
         </CardContent>
       </Card>
 
