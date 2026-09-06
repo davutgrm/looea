@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { createInterface } from "node:readline/promises";
 import bcrypt from "bcryptjs";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
@@ -79,7 +80,60 @@ function dateAt(daysFromToday: number): Date {
   return d;
 }
 
+const CONFIRM_PHRASE = "EVET-SIL";
+
+/** Bu proje dev ve prod için AYNI Supabase Postgres veritabanını kullanıyor
+ * (bkz. .env notu) — DATABASE_URL'e bakarak "dev mi prod mu" ayıramayız,
+ * ikisi de aynı adres. 2026-09-05'te bu script tsx ile yanlışlıkla (bir
+ * "&&" zincirinde, komutun çıktısı okunmadan) canlıya karşı çalıştırıldı ve
+ * TÜM tabloları (kullanıcılar dahil) silip demo veriyle değiştirdi. Bu guard
+ * o kazanın bir daha olmasını engellemek için var: local SQLite dışında her
+ * hedefte (yani her zaman, bu proje Postgres'e geçtiğinden beri) ya
+ * etkileşimli bir onay ister ya da CI/otomasyon için açık bir env bayrağı
+ * bekler; hiçbiri yoksa sessizce devam etmek yerine sertçe durur. */
+async function guardAgainstAccidentalWipe() {
+  const dbUrl = process.env.DATABASE_URL ?? "";
+  if (dbUrl.startsWith("file:")) return; // yerel SQLite dosyası — paylaşılmıyor, güvenli
+
+  if (process.env.VERCEL) {
+    console.error(
+      "\nSeed script bir Vercel build/runtime ortamında çalıştırılamaz.\n" +
+        "Bu proje dev ve prod için AYNI veritabanını paylaşıyor; burada çalıştırmak canlı veriyi siler.\n",
+    );
+    process.exit(1);
+  }
+
+  if (process.env.SEED_CONFIRM === CONFIRM_PHRASE) {
+    console.warn(`SEED_CONFIRM=${CONFIRM_PHRASE} ile onaylandı, devam ediliyor.\n`);
+    return;
+  }
+
+  console.warn(
+    "\n⚠️  UYARI: DATABASE_URL bir Postgres/Supabase adresi. Bu proje dev ve prod için AYNI\n" +
+      "veritabanını paylaşıyor — bu script TÜM tabloları (kullanıcılar dahil) siler ve demo\n" +
+      "verilerle değiştirir. Eğer bu canlı (production) veritabanıysa DEVAM ETME.\n",
+  );
+
+  if (!process.stdin.isTTY) {
+    console.error(
+      "Etkileşimli olmayan bir ortamda çalışıyor (TTY yok), onay istenemiyor.\n" +
+        `Bilerek çalıştırıyorsan: SEED_CONFIRM=${CONFIRM_PHRASE} npx prisma db seed\n`,
+    );
+    process.exit(1);
+  }
+
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+  const answer = await rl.question(`Devam etmek için tam olarak "${CONFIRM_PHRASE}" yaz ve Enter'a bas: `);
+  rl.close();
+  if (answer.trim() !== CONFIRM_PHRASE) {
+    console.error("Onaylanmadı, çıkılıyor.");
+    process.exit(1);
+  }
+}
+
 async function main() {
+  await guardAgainstAccidentalWipe();
+
   console.log("Seeding Looea database...");
 
   // --- wipe (dev only) ---
