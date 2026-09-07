@@ -22,24 +22,37 @@ const STYLE_URL = "https://tiles.openfreemap.org/styles/positron";
 // ever upgraded.
 maplibregl.setWorkerUrl("/maplibre-gl-worker.mjs");
 
-function pinHtml(selected: boolean, label?: string) {
+// `label` is untrusted (business-owner-controlled) text. It is never
+// interpolated into an HTML string — see createPinLabel below, which sets it
+// via `textContent` on its own element instead — so it cannot inject markup.
+function pinHtml(selected: boolean) {
   const color = "var(--app-accent, #a21cdb)";
   const pinHeight = 40;
-  const labelHtml = label
-    ? `<span style="
-        position:absolute; left:50%; top:-6px; transform:translate(-50%,-100%);
-        background:white; color:#18181b; font:600 11px/1.2 var(--font-grotesk, ui-sans-serif, sans-serif);
-        padding:3px 8px; border-radius:9999px; white-space:nowrap;
-        box-shadow:0 1px 2px rgba(0,0,0,0.08),0 4px 10px -2px rgba(0,0,0,0.15);
-      ">${label}</span>`
-    : "";
   return `<div style="position:relative; width:30px; height:${pinHeight}px; cursor:pointer;">
-      ${labelHtml}
       <svg width="30" height="40" viewBox="0 0 30 40" xmlns="http://www.w3.org/2000/svg">
         <path d="M15 0C6.7 0 0 6.7 0 15c0 10.5 15 25 15 25s15-14.5 15-25C30 6.7 23.3 0 15 0z" fill="${color}" opacity="${selected ? 1 : 0.9}"/>
         <circle cx="15" cy="15" r="6" fill="white"/>
       </svg>
     </div>`;
+}
+
+function createPinLabel(label: string): HTMLSpanElement {
+  const span = document.createElement("span");
+  span.textContent = label;
+  Object.assign(span.style, {
+    position: "absolute",
+    left: "50%",
+    top: "-6px",
+    transform: "translate(-50%,-100%)",
+    background: "white",
+    color: "#18181b",
+    font: "600 11px/1.2 var(--font-grotesk, ui-sans-serif, sans-serif)",
+    padding: "3px 8px",
+    borderRadius: "9999px",
+    whiteSpace: "nowrap",
+    boxShadow: "0 1px 2px rgba(0,0,0,0.08),0 4px 10px -2px rgba(0,0,0,0.15)",
+  });
+  return span;
 }
 
 function clusterHtml(count: number) {
@@ -151,7 +164,14 @@ export default function OsmMapView({
     markerRefs.current.forEach((m) => m.remove());
     markerRefs.current = clusters.map((c) => {
       const el = document.createElement("div");
-      el.innerHTML = c.count > 1 ? clusterHtml(c.count) : pinHtml(c.marker!.id === selectedMarkerId, c.marker!.label);
+      if (c.count > 1) {
+        el.innerHTML = clusterHtml(c.count);
+      } else {
+        el.innerHTML = pinHtml(c.marker!.id === selectedMarkerId);
+        if (c.marker!.label) {
+          el.firstElementChild!.appendChild(createPinLabel(c.marker!.label));
+        }
+      }
       const wrapper = el.firstElementChild as HTMLElement;
       wrapper.addEventListener("click", () => {
         if (c.count > 1) {
