@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Field } from "@/components/ui/field";
 import { addStaffTimeOff, deleteStaffTimeOff } from "@/lib/actions/business";
 
 export type TimeOffRow = { id: string; startDate: string; endDate: string; reason: string | null };
@@ -83,24 +83,21 @@ export function StaffTimeOffSheet({
         <div className="flex flex-col gap-4 overflow-y-auto px-4 pb-4">
           <div className="flex flex-col gap-2.5 rounded-lg border border-border p-3">
             <div className="grid grid-cols-2 gap-2">
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="timeoff-start">Başlangıç</Label>
+              <Field label="Başlangıç" htmlFor="timeoff-start">
                 <Input id="timeoff-start" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="timeoff-end">Bitiş</Label>
+              </Field>
+              <Field label="Bitiş" htmlFor="timeoff-end">
                 <Input id="timeoff-end" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
-              </div>
+              </Field>
             </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="timeoff-reason">Sebep (opsiyonel)</Label>
+            <Field label="Sebep (opsiyonel)" htmlFor="timeoff-reason">
               <Input
                 id="timeoff-reason"
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 placeholder="Yıllık izin, rapor..."
               />
-            </div>
+            </Field>
             <Button type="button" variant="accent" onClick={handleAdd} disabled={isPending} className="mt-1 w-full">
               İzin Ekle
             </Button>

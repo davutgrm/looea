@@ -722,6 +722,41 @@ export async function uploadBusinessCover(formData: FormData): Promise<ActionRes
   return uploadBusinessImage(formData, "cover");
 }
 
+/** Hizmet görseli yükle — URL döner, form gönderiminde Service.imageUrl'e yazılır
+ * (portföy/logo ile aynı desen; ownership requireBusiness ile). */
+export async function uploadServiceImage(formData: FormData): Promise<ActionResult<{ url: string }>> {
+  const { businessId } = await requireBusiness();
+  const file = formData.get("file");
+  if (!(file instanceof File)) return fail("Dosya bulunamadı");
+
+  const validated = await validateImageFile(file);
+  if (!validated.ok) return fail(validated.error);
+
+  const url = await uploadImageToStorage({
+    bucket: BUCKETS.BUSINESS_PHOTOS,
+    folder: `${businessId}/services`,
+    image: validated.value,
+  });
+  return { success: true, data: { url } };
+}
+
+/** Çalışan fotoğrafı yükle — URL döner, form gönderiminde Staff.avatarUrl'e yazılır. */
+export async function uploadStaffAvatar(formData: FormData): Promise<ActionResult<{ url: string }>> {
+  const { businessId } = await requireBusiness();
+  const file = formData.get("file");
+  if (!(file instanceof File)) return fail("Dosya bulunamadı");
+
+  const validated = await validateImageFile(file);
+  if (!validated.ok) return fail(validated.error);
+
+  const url = await uploadImageToStorage({
+    bucket: BUCKETS.BUSINESS_PHOTOS,
+    folder: `${businessId}/staff`,
+    image: validated.value,
+  });
+  return { success: true, data: { url } };
+}
+
 export async function updateBusinessLocation(input: unknown): Promise<ActionResult> {
   const { businessId } = await requireBusiness();
 

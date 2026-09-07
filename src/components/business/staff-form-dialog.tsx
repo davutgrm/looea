@@ -16,10 +16,12 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Field } from "@/components/ui/field";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { upsertStaff } from "@/lib/actions/business";
+import { ImageUploadField } from "@/components/business/image-upload-field";
+import { upsertStaff, uploadStaffAvatar } from "@/lib/actions/business";
 
 const formSchema = z.object({
   name: z.string().min(2, "İsim en az 2 karakter olmalı"),
@@ -111,23 +113,21 @@ export function StaffFormDialog({
           <DialogDescription>Çalışan bilgilerini girin.</DialogDescription>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="flex max-h-[70vh] flex-col gap-3 overflow-y-auto pr-1">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="staff-name">Ad Soyad</Label>
-            <Input id="staff-name" {...form.register("name")} />
-            {form.formState.errors.name && (
-              <p className="text-xs text-destructive">{form.formState.errors.name.message}</p>
-            )}
-          </div>
+          <Field label="Ad Soyad" htmlFor="staff-name" error={form.formState.errors.name?.message}>
+            <Input id="staff-name" aria-invalid={!!form.formState.errors.name} {...form.register("name")} />
+          </Field>
 
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="staff-title">Unvan / Uzmanlık</Label>
+          <Field label="Unvan / Uzmanlık" htmlFor="staff-title">
             <Input id="staff-title" {...form.register("title")} placeholder="Örn. Kuaför, Berber" />
-          </div>
+          </Field>
 
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="staff-avatar">Fotoğraf URL</Label>
-            <Input id="staff-avatar" {...form.register("avatarUrl")} placeholder="https://..." />
-          </div>
+          <ImageUploadField
+            label="Fotoğraf"
+            shape="circle"
+            value={form.watch("avatarUrl") || null}
+            onUploaded={(url) => form.setValue("avatarUrl", url, { shouldDirty: true })}
+            upload={uploadStaffAvatar}
+          />
 
           <div className="flex flex-col gap-1.5">
             <Label>Verebileceği Hizmetler</Label>

@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Field } from "@/components/ui/field";
 import { upsertBusinessCustomer } from "@/lib/actions/business";
 
 export function AddCustomerButton() {
@@ -65,14 +65,12 @@ function AddCustomerDialog({ open, onOpenChange }: { open: boolean; onOpenChange
           <DialogDescription>Müşteri bir hesap açmadan salonunuzun kayıtlarına eklenir.</DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-3">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="customer-name">İsim</Label>
+          <Field label="İsim" htmlFor="customer-name" required>
             <Input id="customer-name" value={name} onChange={(e) => setName(e.target.value)} />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="customer-phone">Telefon</Label>
+          </Field>
+          <Field label="Telefon" htmlFor="customer-phone" required>
             <div className="flex items-center gap-2">
-              <span className="shrink-0 rounded-lg border border-border px-2.5 py-2 text-sm text-muted-foreground">
+              <span className="flex h-11 shrink-0 items-center rounded-lg border border-border px-3 text-sm text-muted-foreground">
                 +90
               </span>
               <Input
@@ -83,11 +81,10 @@ function AddCustomerDialog({ open, onOpenChange }: { open: boolean; onOpenChange
                 inputMode="tel"
               />
             </div>
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="customer-email">E-posta (opsiyonel)</Label>
+          </Field>
+          <Field label="E-posta (opsiyonel)" htmlFor="customer-email">
             <Input id="customer-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-          </div>
+          </Field>
         </div>
         <DialogFooter>
           <Button type="button" variant="accent" disabled={isPending} onClick={submit}>

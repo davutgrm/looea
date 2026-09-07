@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Field } from "@/components/ui/field";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { createBlockedSlot } from "@/lib/actions/business";
@@ -97,8 +97,7 @@ function BlockedSlotDialog({
         </DialogHeader>
 
         <div className="flex max-h-[65vh] flex-col gap-3 overflow-y-auto pr-1">
-          <div className="flex flex-col gap-1.5">
-            <Label>Çalışan</Label>
+          <Field label="Çalışan">
             <Select value={staffId} onValueChange={setStaffId}>
               <SelectTrigger className="w-full">
                 <SelectValue />
@@ -112,26 +111,22 @@ function BlockedSlotDialog({
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </Field>
 
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="block-date">Tarih</Label>
+          <Field label="Tarih" htmlFor="block-date">
             <Input id="block-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-          </div>
+          </Field>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="block-start">Başlangıç</Label>
+            <Field label="Başlangıç" htmlFor="block-start">
               <Input id="block-start" type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="block-end">Bitiş</Label>
+            </Field>
+            <Field label="Bitiş" htmlFor="block-end">
               <Input id="block-end" type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
-            </div>
+            </Field>
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <Label>Sebep</Label>
+          <Field label="Sebep">
             <Select value={reason} onValueChange={(v) => setReason(v as BlockReason)}>
               <SelectTrigger className="w-full">
                 <SelectValue />
@@ -144,22 +139,20 @@ function BlockedSlotDialog({
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </Field>
 
           {reason === "CUSTOM" && (
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="block-label">Açıklama</Label>
+            <Field label="Açıklama" htmlFor="block-label">
               <Input
                 id="block-label"
                 value={label}
                 onChange={(e) => setLabel(e.target.value)}
                 placeholder="Örn. Bakım"
               />
-            </div>
+            </Field>
           )}
 
-          <div className="flex flex-col gap-1.5">
-            <Label>Tekrar</Label>
+          <Field label="Tekrar">
             <RadioGroup
               value={repeatWeekly}
               onValueChange={(v) => setRepeatWeekly(v as "once" | "weekly")}
@@ -172,7 +165,7 @@ function BlockedSlotDialog({
                 <RadioGroupItem value="weekly" /> Her hafta
               </label>
             </RadioGroup>
-          </div>
+          </Field>
         </div>
 
         <DialogFooter>

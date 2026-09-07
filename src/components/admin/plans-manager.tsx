@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Field } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -245,13 +246,11 @@ function PlanFormDialog({
           <DialogDescription>Abonelik planı bilgilerini girin.</DialogDescription>
         </DialogHeader>
         <div className="max-h-[60vh] space-y-4 overflow-y-auto py-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="plan-name">Plan Adı</Label>
+          <Field label="Plan Adı" htmlFor="plan-name" required>
             <Input id="plan-name" value={name} onChange={(e) => setName(e.target.value)} required />
-          </div>
+          </Field>
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="plan-price">Fiyat (<span className="font-sans">₺</span>)</Label>
+            <Field label={<>Fiyat (<span className="font-sans">₺</span>)</>} htmlFor="plan-price">
               <Input
                 id="plan-price"
                 type="number"
@@ -260,9 +259,8 @@ function PlanFormDialog({
                 value={price}
                 onChange={(e) => setPrice(Number(e.target.value))}
               />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Periyot</Label>
+            </Field>
+            <Field label="Periyot">
               <Select value={billingPeriod} onValueChange={setBillingPeriod}>
                 <SelectTrigger className="w-full">
                   <SelectValue />
@@ -272,10 +270,9 @@ function PlanFormDialog({
                   <SelectItem value="YEARLY">Yıllık</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </Field>
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="plan-features">Özellikler (her satıra bir tane)</Label>
+          <Field label="Özellikler (her satıra bir tane)" htmlFor="plan-features">
             <Textarea
               id="plan-features"
               rows={5}
@@ -283,16 +280,15 @@ function PlanFormDialog({
               onChange={(e) => setFeaturesText(e.target.value)}
               placeholder={"Sınırsız randevu\nÖncelikli destek\nSMS bildirimleri"}
             />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="plan-order">Sıra</Label>
+          </Field>
+          <Field label="Sıra" htmlFor="plan-order">
             <Input
               id="plan-order"
               type="number"
               value={order}
               onChange={(e) => setOrder(Number(e.target.value))}
             />
-          </div>
+          </Field>
           <div className="flex items-center justify-between rounded-lg border border-input px-3 py-2">
             <Label htmlFor="plan-active" className="cursor-pointer">
               Aktif

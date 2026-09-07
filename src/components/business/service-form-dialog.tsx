@@ -16,12 +16,14 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Field } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { upsertService } from "@/lib/actions/business";
+import { ImageUploadField } from "@/components/business/image-upload-field";
+import { upsertService, uploadServiceImage } from "@/lib/actions/business";
 
 const formSchema = z.object({
   name: z.string().min(2, "Hizmet adı en az 2 karakter olmalı"),
@@ -125,21 +127,16 @@ export function ServiceFormDialog({
           <DialogDescription>Hizmet bilgilerini girin.</DialogDescription>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="flex max-h-[70vh] flex-col gap-3 overflow-y-auto pr-1">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="service-name">Hizmet Adı</Label>
-            <Input id="service-name" {...form.register("name")} />
-            {form.formState.errors.name && (
-              <p className="text-xs text-destructive">{form.formState.errors.name.message}</p>
-            )}
-          </div>
+          <Field label="Hizmet Adı" htmlFor="service-name" error={form.formState.errors.name?.message}>
+            <Input id="service-name" aria-invalid={!!form.formState.errors.name} {...form.register("name")} />
+          </Field>
 
-          <div className="flex flex-col gap-1.5">
-            <Label>Kategori</Label>
+          <Field label="Kategori" error={form.formState.errors.categoryId?.message}>
             <Select
               value={form.watch("categoryId")}
               onValueChange={(v) => form.setValue("categoryId", v, { shouldDirty: true })}
             >
-              <SelectTrigger className="w-full">
+              <SelectTrigger className="w-full" aria-invalid={!!form.formState.errors.categoryId}>
                 <SelectValue placeholder="Kategori seçin" />
               </SelectTrigger>
               <SelectContent>
@@ -150,46 +147,43 @@ export function ServiceFormDialog({
                 ))}
               </SelectContent>
             </Select>
-            {form.formState.errors.categoryId && (
-              <p className="text-xs text-destructive">{form.formState.errors.categoryId.message}</p>
-            )}
-          </div>
+          </Field>
 
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="service-description">Açıklama</Label>
+          <Field label="Açıklama" htmlFor="service-description">
             <Textarea id="service-description" {...form.register("description")} />
-          </div>
+          </Field>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="service-duration">Süre (dk)</Label>
+            <Field label="Süre (dk)" htmlFor="service-duration" error={form.formState.errors.durationMinutes?.message}>
               <Input
                 id="service-duration"
                 type="number"
+                aria-invalid={!!form.formState.errors.durationMinutes}
                 {...form.register("durationMinutes", { valueAsNumber: true })}
               />
-              {form.formState.errors.durationMinutes && (
-                <p className="text-xs text-destructive">{form.formState.errors.durationMinutes.message}</p>
-              )}
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="service-price">Fiyat (<span className="font-sans">₺</span>)</Label>
+            </Field>
+            <Field
+              label={<>Fiyat (<span className="font-sans">₺</span>)</>}
+              htmlFor="service-price"
+              error={form.formState.errors.price?.message}
+            >
               <Input
                 id="service-price"
                 type="number"
                 step="0.01"
+                aria-invalid={!!form.formState.errors.price}
                 {...form.register("price", { valueAsNumber: true })}
               />
-              {form.formState.errors.price && (
-                <p className="text-xs text-destructive">{form.formState.errors.price.message}</p>
-              )}
-            </div>
+            </Field>
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="service-image">Görsel URL</Label>
-            <Input id="service-image" {...form.register("imageUrl")} placeholder="https://..." />
-          </div>
+          <ImageUploadField
+            label="Görsel"
+            shape="banner"
+            value={form.watch("imageUrl") || null}
+            onUploaded={(url) => form.setValue("imageUrl", url, { shouldDirty: true })}
+            upload={uploadServiceImage}
+          />
 
           <div className="flex flex-col gap-1.5">
             <Label>Hizmeti Verebilecek Çalışanlar</Label>

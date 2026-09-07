@@ -4,7 +4,7 @@ import { useState, useTransition, type FormEvent } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Field } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -49,17 +49,15 @@ export function BusinessEditForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="space-y-1.5">
-          <Label htmlFor="business-name">İşletme Adı</Label>
+        <Field label="İşletme Adı" htmlFor="business-name" required>
           <Input
             id="business-name"
             value={form.name}
             onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
             required
           />
-        </div>
-        <div className="space-y-1.5">
-          <Label>İşletme Türü</Label>
+        </Field>
+        <Field label="İşletme Türü">
           <Select
             value={form.type}
             onValueChange={(v) => setForm((f) => ({ ...f, type: v as BusinessType }))}
@@ -75,50 +73,45 @@ export function BusinessEditForm({
               ))}
             </SelectContent>
           </Select>
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="business-phone">Telefon</Label>
+        </Field>
+        <Field label="Telefon" htmlFor="business-phone">
           <Input
             id="business-phone"
             value={form.phone}
             onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
           />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="business-email">Email</Label>
+        </Field>
+        <Field label="Email" htmlFor="business-email">
           <Input
             id="business-email"
             type="email"
             value={form.email}
             onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
           />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="business-instagram">Instagram</Label>
+        </Field>
+        <Field label="Instagram" htmlFor="business-instagram">
           <Input
             id="business-instagram"
             value={form.instagram}
             onChange={(e) => setForm((f) => ({ ...f, instagram: e.target.value }))}
           />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="business-website">Website</Label>
+        </Field>
+        <Field label="Website" htmlFor="business-website">
           <Input
             id="business-website"
             value={form.website}
             onChange={(e) => setForm((f) => ({ ...f, website: e.target.value }))}
           />
-        </div>
+        </Field>
       </div>
-      <div className="space-y-1.5">
-        <Label htmlFor="business-description">Açıklama</Label>
+      <Field label="Açıklama" htmlFor="business-description">
         <Textarea
           id="business-description"
           rows={4}
           value={form.description}
           onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
         />
-      </div>
+      </Field>
       <Button type="submit" disabled={isPending}>
         {isPending ? "Kaydediliyor..." : "Değişiklikleri Kaydet"}
       </Button>

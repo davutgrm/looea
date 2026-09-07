@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Field } from "@/components/ui/field";
 import {
   Select,
   SelectContent,
@@ -245,12 +246,10 @@ function CategoryFormDialog({
           <DialogDescription>Kategori bilgilerini girin. Slug otomatik oluşturulur.</DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="cat-name">Kategori Adı</Label>
+          <Field label="Kategori Adı" htmlFor="cat-name" required>
             <Input id="cat-name" value={name} onChange={(e) => setName(e.target.value)} required />
-          </div>
-          <div className="space-y-1.5">
-            <Label>Grup</Label>
+          </Field>
+          <Field label="Grup">
             <Select value={group} onValueChange={setGroup}>
               <SelectTrigger className="w-full">
                 <SelectValue />
@@ -263,16 +262,15 @@ function CategoryFormDialog({
                 ))}
               </SelectContent>
             </Select>
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="cat-order">Sıra</Label>
+          </Field>
+          <Field label="Sıra" htmlFor="cat-order">
             <Input
               id="cat-order"
               type="number"
               value={order}
               onChange={(e) => setOrder(Number(e.target.value))}
             />
-          </div>
+          </Field>
           <div className="flex items-center justify-between rounded-lg border border-input px-3 py-2">
             <Label htmlFor="cat-active" className="cursor-pointer">
               Aktif

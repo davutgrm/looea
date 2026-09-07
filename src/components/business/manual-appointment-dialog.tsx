@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Field } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar } from "@/components/ui/calendar";
@@ -300,19 +300,17 @@ function ManualAppointmentDialog({
                 </>
               ) : (
                 <div className="flex flex-col gap-3 rounded-xl border border-border p-3.5">
-                  <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="walkin-name">İsim (opsiyonel)</Label>
+                  <Field label="İsim (opsiyonel)" htmlFor="walkin-name">
                     <Input
                       id="walkin-name"
                       value={walkInName}
                       onChange={(e) => setWalkInName(e.target.value)}
                       placeholder="Müşteri adı"
                     />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="walkin-phone">Telefon</Label>
+                  </Field>
+                  <Field label="Telefon" htmlFor="walkin-phone" required>
                     <div className="flex items-center gap-2">
-                      <span className="shrink-0 rounded-lg border border-border px-2.5 py-2 text-sm text-muted-foreground">
+                      <span className="flex h-11 shrink-0 items-center rounded-lg border border-border px-3 text-sm text-muted-foreground">
                         +90
                       </span>
                       <Input
@@ -323,7 +321,7 @@ function ManualAppointmentDialog({
                         inputMode="tel"
                       />
                     </div>
-                  </div>
+                  </Field>
                   <div className="flex gap-2">
                     <Button type="button" variant="ghost" className="flex-1" onClick={() => setShowWalkInForm(false)}>
                       Vazgeç
@@ -521,10 +519,9 @@ function ManualAppointmentDialog({
                   <SummaryRow label="Toplam" value={<Price amount={totalPrice} />} bold />
                 </div>
               </div>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="manual-notes">Not (opsiyonel)</Label>
+              <Field label="Not (opsiyonel)" htmlFor="manual-notes">
                 <Textarea id="manual-notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} />
-              </div>
+              </Field>
               <Button type="button" variant="accent" size="lg" disabled={isPending} onClick={confirm}>
                 {isPending && <Loader2 className="size-4 animate-spin" />}
                 Randevuyu Onayla
