@@ -2,6 +2,7 @@ import { startOfDay, endOfDay, startOfWeek, endOfWeek, addDays, format } from "d
 import { CalendarDays } from "lucide-react";
 import { requireBusiness } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
+import { parseDateOnly } from "@/lib/date";
 import { Card, CardContent } from "@/components/ui/card";
 import { PageHeader } from "@/components/business/page-header";
 import { EmptyState } from "@/components/business/empty-state";
@@ -24,8 +25,8 @@ export default async function TakvimPage({
   const { businessId } = await requireBusiness();
   const params = await searchParams;
   const view = params.view === "week" ? "week" : "day";
-  const baseDate =
-    params.date && !Number.isNaN(new Date(params.date).getTime()) ? new Date(params.date) : new Date();
+  const parsedDate = params.date ? parseDateOnly(params.date) : null;
+  const baseDate = parsedDate && !Number.isNaN(parsedDate.getTime()) ? parsedDate : new Date();
   const dateParam = format(baseDate, "yyyy-MM-dd");
 
   const [bookingContext, staffOptions] = await Promise.all([
