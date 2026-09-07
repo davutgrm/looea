@@ -1,5 +1,6 @@
 import { startOfDay, endOfDay, format } from "date-fns";
 import { tr } from "date-fns/locale";
+import { parseDateOnly } from "@/lib/date";
 import { CalendarCheck } from "lucide-react";
 import { requireBusiness } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
@@ -35,7 +36,7 @@ export default async function RandevularPage({
   else if (status === "NO_SHOW") where.status = "NO_SHOW";
 
   if (params.date) {
-    const day = new Date(params.date);
+    const day = parseDateOnly(params.date);
     if (!Number.isNaN(day.getTime())) {
       where.date = { gte: startOfDay(day), lte: endOfDay(day) };
     }
