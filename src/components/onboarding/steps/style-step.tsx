@@ -18,6 +18,14 @@ export function StyleStep({
     onChange(value.includes(option) ? value.filter((v) => v !== option) : [...value, option]);
   }
 
+  if (options.length === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        Şu an bu kategori için tarz seçeneği yok — devam edebilirsin.
+      </p>
+    );
+  }
+
   return (
     <div className="grid grid-cols-2 gap-2.5">
       {options.map((opt) => {

@@ -171,7 +171,7 @@ export function OnboardingWizard({
         {...nav}
         title="Hangi tarzlar ilgini çekiyor?"
         subtitle="Sana daha uygun kuaförleri önerelim."
-        canContinue={data.interests.length > 0}
+        canContinue={styleOptions.length === 0 || data.interests.length > 0}
         onContinue={goNext}
       >
         <StyleStep options={styleOptions} value={data.interests} onChange={(interests) => setData((d) => ({ ...d, interests }))} />
