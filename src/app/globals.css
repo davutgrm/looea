@@ -190,7 +190,10 @@
 }
 
 /* Scroll-reveal: aşağıdan hafif fade+translate, tek yön, bir kez. Reveal bileşeni
-   (src/components/ui/reveal.tsx) görünür olunca `data-reveal="in"` set eder. */
+   (src/components/ui/reveal.tsx) görünür olunca `data-reveal="in"` set eder.
+   Gizleme yalnızca `.js` (bkz. app/layout.tsx'teki beforeInteractive script)
+   sınıfı altında uygulanır — JS çalışmazsa/hydration başarısız olursa içerik
+   varsayılan olarak görünür kalır, kalıcı olarak opacity:0'da takılmaz. */
 @layer utilities {
   @keyframes kuafi-reveal {
     from {
@@ -202,15 +205,15 @@
       transform: none;
     }
   }
-  [data-reveal] {
+  .js [data-reveal] {
     opacity: 0;
   }
-  [data-reveal="in"] {
+  .js [data-reveal="in"] {
     animation: kuafi-reveal 0.55s var(--ease-out-quart) both;
   }
   @media (prefers-reduced-motion: reduce) {
-    [data-reveal],
-    [data-reveal="in"] {
+    .js [data-reveal],
+    .js [data-reveal="in"] {
       opacity: 1;
       animation: none;
       transform: none;
