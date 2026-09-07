@@ -27,7 +27,10 @@ import { searchBusinessesAction, getAvailabilityBadges } from "@/lib/actions/sea
 
 const RADIUS_OPTIONS = [1, 5, 10, 25];
 const RATING_OPTIONS = [3, 4, 4.5];
-const PRICE_OPTIONS = [200, 500, 1000];
+// TR 2025 kuaför/berber piyasası: ekonomik berberde başlangıç ~200₺,
+// orta segment kuaförde ~500₺, lüks salonlarda kesim ~1500₺ / boya 2000₺+.
+// Filtre işletmenin en ucuz hizmetine ("…'ye kadar") göre çalışır.
+const PRICE_OPTIONS = [250, 500, 1000, 2000];
 
 export function SearchView({
   initialQuery,
@@ -191,7 +194,7 @@ export function SearchView({
             <SelectItem value="any">Tüm fiyatlar</SelectItem>
             {PRICE_OPTIONS.map((p) => (
               <SelectItem key={p} value={String(p)}>
-                {p}<span className="font-sans">₺</span>&apos;ye kadar
+                {p.toLocaleString("tr-TR")}<span className="font-sans">₺</span>&apos;ye kadar
               </SelectItem>
             ))}
           </SelectContent>
