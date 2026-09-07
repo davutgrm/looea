@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
-import { List, MapIcon, Navigation, SearchX } from "lucide-react";
+import { List, MapIcon, Navigation, Search, SearchX } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -54,7 +55,8 @@ export function SearchView({
   const { coords } = useLocation();
   const guest = useGuestSegment();
   const [view, setView] = useState<"list" | "map">("list");
-  const [query] = useState(initialQuery);
+  const [query, setQuery] = useState(initialQuery);
+  const [debouncedQuery, setDebouncedQuery] = useState(initialQuery);
   const [categorySlug, setCategorySlug] = useState(initialCategory);
   const [radiusKm, setRadiusKm] = useState<number | null>(null);
   const [minRating, setMinRating] = useState<number | null>(null);
@@ -71,7 +73,7 @@ export function SearchView({
   const runSearch = (bounds?: MapBounds) => {
     startTransition(async () => {
       const data = await searchBusinessesAction({
-        query: query || undefined,
+        query: debouncedQuery || undefined,
         categorySlug: categorySlug || undefined,
         origin: coords,
         radiusKm: bounds ? undefined : radiusKm ?? undefined,
@@ -87,9 +89,14 @@ export function SearchView({
   };
 
   useEffect(() => {
+    const t = setTimeout(() => setDebouncedQuery(query), 350);
+    return () => clearTimeout(t);
+  }, [query]);
+
+  useEffect(() => {
     runSearch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [categorySlug, radiusKm, minRating, maxPrice, sort, coords?.lat, coords?.lng]);
+  }, [debouncedQuery, categorySlug, radiusKm, minRating, maxPrice, sort, coords?.lat, coords?.lng]);
 
   useEffect(() => {
     if (todayOnly && results.length > 0) {
@@ -135,6 +142,21 @@ export function SearchView({
     <div className="flex h-[calc(100dvh-4rem)] flex-col md:h-[calc(100dvh-4rem)]">
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-2 border-b px-4 py-3">
+        <div className="relative w-full sm:w-56">
+          <label htmlFor="ara-query" className="sr-only">
+            İsim veya hizmetle ara
+          </label>
+          <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            id="ara-query"
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Hizmet veya kuaför ara..."
+            className="h-9 rounded-full pl-10"
+          />
+        </div>
+
         <Select value={categorySlug || "all"} onValueChange={(v) => setCategorySlug(v === "all" ? "" : v)}>
           <SelectTrigger className="h-9 w-auto min-w-[140px]">
             <SelectValue placeholder="Kategori" />
