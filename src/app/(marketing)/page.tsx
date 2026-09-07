@@ -212,7 +212,7 @@ export default async function LandingPage() {
 
       {/* ── Kategoriler: bento ── */}
       {catGroups.length > 0 && (
-        <section className={`${layout.sectionY} border-t border-border bg-secondary/30`}>
+        <section id="hizmetler" className={`${layout.sectionY} border-t border-border bg-secondary/30`}>
           <div className={layout.container}>
             <Reveal>
               <Eyebrow>Hizmetler</Eyebrow>
@@ -279,7 +279,7 @@ export default async function LandingPage() {
       )}
 
       {/* ── Nasıl çalışır: bağlı zaman çizelgesi ── */}
-      <section className={`${layout.sectionY} border-t border-border bg-secondary/30`}>
+      <section id="nasil-calisir" className={`${layout.sectionY} border-t border-border bg-secondary/30`}>
         <div className={layout.container}>
           <Reveal className="max-w-2xl">
             <Eyebrow>Nasıl çalışır</Eyebrow>
