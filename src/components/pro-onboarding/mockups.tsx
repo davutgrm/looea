@@ -2,7 +2,7 @@ import { Check, TrendingUp } from "lucide-react";
 
 /**
  * Tanıtım ekranlarındaki görseller: ürünün kendi arayüzünden sade UI mockup'ları
- * (illüstrasyon/fotoğraf değil). Hepsi düz renk, tek aksan (#A21CDB) minimum.
+ * (illüstrasyon/fotoğraf değil). Hepsi düz renk, tek aksan (#B423F3) minimum.
  */
 
 const cardBase =

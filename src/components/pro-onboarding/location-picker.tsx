@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 const STYLE_URL = "https://tiles.openfreemap.org/styles/positron";
 maplibregl.setWorkerUrl("/maplibre-gl-worker.mjs");
 
-const ACCENT = "#a21cdb";
+const ACCENT = "#b423f3";
 
 /** Adres için sürüklenebilir tek pin'li harita. Pin bırakıldığında ya da haritaya
  * tıklandığında onChange ile lat/lng döner. */

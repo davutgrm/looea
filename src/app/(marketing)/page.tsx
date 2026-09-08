@@ -98,7 +98,7 @@ export default async function LandingPage() {
       <section className="relative">
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[560px] bg-[radial-gradient(70%_60%_at_15%_0%,rgba(162,28,219,0.10),transparent_70%)]"
+          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[560px] bg-[radial-gradient(70%_60%_at_15%_0%,rgba(180,35,243,0.10),transparent_70%)]"
         />
         <div className={`${layout.container} grid items-center gap-12 py-16 md:grid-cols-[1.05fr_0.95fr] md:py-24`}>
           <div>

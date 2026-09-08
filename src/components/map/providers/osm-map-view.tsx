@@ -26,7 +26,7 @@ maplibregl.setWorkerUrl("/maplibre-gl-worker.mjs");
 // interpolated into an HTML string — see createPinLabel below, which sets it
 // via `textContent` on its own element instead — so it cannot inject markup.
 function pinHtml(selected: boolean) {
-  const color = "var(--app-accent, #a21cdb)";
+  const color = "var(--app-accent, #b423f3)";
   const pinHeight = 40;
   return `<div style="position:relative; width:30px; height:${pinHeight}px; cursor:pointer;">
       <svg width="30" height="40" viewBox="0 0 30 40" xmlns="http://www.w3.org/2000/svg">
@@ -60,7 +60,7 @@ function clusterHtml(count: number) {
   const fontSize = count < 100 ? 14 : 12;
   return `<div style="
       width:${size}px; height:${size}px; border-radius:9999px; cursor:pointer;
-      background: var(--app-accent, #a21cdb); color:#fff; display:flex;
+      background: var(--app-accent, #b423f3); color:#fff; display:flex;
       align-items:center; justify-content:center; font:700 ${fontSize}px var(--font-grotesk, ui-sans-serif, sans-serif);
       box-shadow:0 2px 4px rgba(0,0,0,0.15), 0 8px 20px -6px rgba(0,0,0,0.3); border:3px solid white;
     ">${count}</div>`;

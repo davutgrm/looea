@@ -28,7 +28,7 @@
  * ── RENK ROLLERİ (globals.css)
  *   surface=background · elevated=card · border=border
  *   metin: foreground (birincil) · muted-foreground (yalnızca tali bilgi)
- *   aksan=app-accent (#A21CDB) · aksan-soft=app-accent-soft
+ *   aksan=app-accent (#B423F3) · aksan-soft=app-accent-soft
  *   durum: success · warning · destructive(hata)
  *   AKSAN yalnızca: birincil buton · aktif durum · link · seçili öğe. Dekorasyon DEĞİL.
  *
