@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Bell, CalendarCheck, Heart, HelpCircle, MessageSquareText, Settings, CreditCard } from "lucide-react";
+import { Bell, CalendarCheck, Heart, HelpCircle, MessageSquareText } from "lucide-react";
 import { requireUser } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -11,9 +11,7 @@ const MENU = [
   { href: "/hesabim/favoriler", label: "Favorilerim", icon: Heart },
   { href: "/hesabim/yorumlarim", label: "Yorumlarım", icon: MessageSquareText },
   { href: "/hesabim/bildirimler", label: "Bildirimler", icon: Bell },
-  { href: "#odeme", label: "Ödeme Yöntemleri", icon: CreditCard },
-  { href: "#ayarlar", label: "Ayarlar", icon: Settings },
-  { href: "#yardim", label: "Yardım", icon: HelpCircle },
+  { href: "/#sss", label: "Yardım", icon: HelpCircle },
 ];
 
 export default async function ProfilePage() {
